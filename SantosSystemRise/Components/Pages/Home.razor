@@ -1,0 +1,207 @@
+﻿@page "/"
+@using SantosSystemRise.Services
+@using SantosSystemRise.Models
+@inject RiseControlService ControlService
+@rendermode InteractiveServer
+
+<style>
+    :root {
+        --accent: #38bdf8;
+        --accent-glow: rgba(56, 189, 248, 0.3);
+        --bg-dark: #020617;
+        --card-bg: rgba(30, 41, 59, 0.5);
+        --text-main: #f8fafc;
+    }
+
+    /* Fondo animado y limpieza de márgenes */
+    .system-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow-y: auto;
+        background: radial-gradient(circle at top right, #0f172a, #020617);
+        color: var(--text-main);
+        padding: 40px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .main-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto 50px auto;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        padding-bottom: 20px;
+    }
+
+    .brand-title {
+        font-size: 1.8rem;
+        font-weight: 200;
+        letter-spacing: 2px;
+    }
+
+        .brand-title b {
+            color: var(--accent);
+            font-weight: 800;
+            letter-spacing: 5px;
+            margin-right: 10px;
+        }
+
+    /* Tarjetas Estilo ASRock/Gamer Premium */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 25px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .device-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 24px;
+        padding: 30px;
+        transition: 0.3s ease;
+        position: relative;
+    }
+
+        .device-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 30px var(--accent-glow);
+            transform: translateY(-5px);
+        }
+
+    .mac-badge {
+        font-family: 'JetBrains Mono', monospace;
+        background: rgba(0,0,0,0.3);
+        color: var(--accent);
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        display: inline-block;
+        margin: 15px 0;
+    }
+
+    .rise-pulse-btn {
+        width: 100%;
+        background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+        border: none;
+        color: #020617;
+        padding: 15px;
+        border-radius: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        margin-top: 20px;
+        text-transform: uppercase;
+    }
+
+    /* Modal - Reparado para que sea visible */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        backdrop-filter: blur(8px);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background: #0f172a;
+        border: 1px solid var(--accent);
+        border-radius: 24px;
+        padding: 40px;
+        width: 450px;
+        box-shadow: 0 0 50px rgba(0,0,0,1);
+    }
+
+    .form-input {
+        width: 100%;
+        background: #1e293b;
+        border: 1px solid #334155;
+        color: white;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+</style>
+
+<div class="system-container">
+    <header class="main-header">
+        <div class="brand-title"><b>SANTOS</b>SystemRise</div>
+        <button class="add-device-btn" @onclick="OpenModal"
+                style="background:transparent; border:1px solid var(--accent); color:var(--accent); padding:10px 20px; border-radius:50px; cursor:pointer;">
+            <i class="bi bi-plus-circle"></i> REGISTRAR TERMINAL
+        </button>
+    </header>
+
+    <div class="dashboard-grid">
+        @foreach (var device in ControlService.GetAllDevices())
+        {
+            <div class="device-card">
+                <div style="display:flex; justify-content:space-between; opacity:0.6; font-size:0.7rem;">
+                    <span>@device.TypeLabel</span>
+                    <i class="bi bi-trash" style="cursor:pointer;" @onclick="() => Remove(device.Id)"></i>
+                </div>
+                <h2 style="margin:10px 0 5px 0; font-weight:300;">@device.Name</h2>
+                <div class="mac-badge">@device.MacAddress</div>
+                <div style="font-size:0.9rem; color:#94a3b8;">
+                    <p>Broadcast: @device.BroadcastIP</p>
+                    <p><span style="color:@(device.IsActive ? "#4ade80" : "#f87171")">●</span> @(device.IsActive ? $"IP: {device.IP}" : "Sin respuesta")</p>
+                </div>
+                <button class="rise-pulse-btn" @onclick="() => ControlService.SendMagicPacket(device.Id)">
+                    ENVIAR RISE-PULSE
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@if (showModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-bottom:20px; color:var(--accent);">NUEVO EQUIPO</h3>
+            <input @bind="newDevice.Name" placeholder="Nombre (Ej: ASRock Admin)" class="form-input" />
+            <input @bind="newDevice.MacAddress" placeholder="Dirección MAC" class="form-input" />
+            <input @bind="newDevice.BroadcastIP" placeholder="Broadcast (172.16.255.255)" class="form-input" />
+
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button @onclick="Save" style="flex:1; background:var(--accent); border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">GUARDAR</button>
+                <button @onclick="CloseModal" style="flex:1; background:transparent; border:1px solid #334155; color:white; padding:12px; border-radius:8px; cursor:pointer;">CANCELAR</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool showModal = false;
+    private Device newDevice = new();
+
+    private void OpenModal() { newDevice = new() { BroadcastIP = "172.16.255.255" }; showModal = true; StateHasChanged(); }
+    private void CloseModal() { showModal = false; StateHasChanged(); }
+
+    private void Save()
+    {
+        if (!string.IsNullOrWhiteSpace(newDevice.Name))
+        {
+            ControlService.AddDevice(newDevice);
+            showModal = false;
+            StateHasChanged();
+        }
+    }
+
+    private void Remove(int id)
+    {
+        ControlService.RemoveDevice(id);
+        StateHasChanged();
+    }
+}
