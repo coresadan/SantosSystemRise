@@ -1,48 +1,62 @@
-﻿@page "/login"
-@inject IConfiguration Config
-@inject NavigationManager Nav
-@inject AuthenticationStateProvider AuthProvider
-builder.Services.AddAuthorizationCore();
-@using Microsoft.AspNetCore.Components.Authorization
-@using SantosSystemRise.Services
+﻿@page "/"
+@inject NavigationManager NavManager
 
+<div class="login-screen">
+    <div class="login-container">
+        <div class="scanner-line"></div>
+        <div class="login-header">
+            <h1>SANTOS</h1>
+            <p>SystemRise</p>
+        </div>
 
-<div class="login-container animate-pop">
-    <div class="login-box">
-        <h1 class="login-title">SANTOS <span>SystemRise</span></h1>
+        <div class="login-field">
+            <input type="password"
+                   class="login-input"
+                   placeholder="INTRODUZCA CREDENCIAL.."
+                   @bind="passwordInput"
+                   @onkeyup="HandleKeyUp" />
+        </div>
 
-        <p class="login-sub">Acceso restringido</p>
-
-        <input type="password" @bind="password" placeholder="Contraseña" class="login-input" />
-
-        <button class="login-btn" @onclick="Validate">
-            <i class="bi bi-shield-lock-fill"></i>
-            ENTRAR
+        <button class="login-btn" @onclick="CheckPassword">
+            AUTORIZAR INGRESO
         </button>
 
-        @if (error)
+        @if (!string.IsNullOrEmpty(errorMessage))
         {
-            <p class="login-error">Contraseña incorrecta</p>
+            <p style="color: var(--danger); font-size: 0.7rem; margin-top: 15px; font-family: 'JetBrains Mono';">
+                @errorMessage
+            </p>
         }
+
+        <div class="login-footer-text">
+            Autenticación requerida
+        </div>
     </div>
 </div>
 
 @code {
-    private string password = "";
-    private bool error = false;
+    private string passwordInput = "";
+    private string errorMessage = "";
+    
+    // Aquí definimos la contraseña del sistema
+    private const string CORRECT_PASSWORD = "SANTOS2026";
 
-    private void Validate()
+    private void CheckPassword()
     {
-        var correct = Config["PanelPassword"];
-
-        if (password == correct)
+        if (passwordInput == CORRECT_PASSWORD)
         {
-            (AuthProvider as SimpleAuthProvider)!.Login();
-            Nav.NavigateTo("/");
+            // Si es correcta, nos vamos a la página de inicio (Index)
+            NavManager.NavigateTo("/home");
         }
         else
         {
-            error = true;
+            errorMessage = "ACCESO DENEGADO: CREDENCIAL INVÁLIDA";
+            passwordInput = "";
         }
+    }
+
+    private void HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") CheckPassword();
     }
 }

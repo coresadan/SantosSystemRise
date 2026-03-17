@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/home"
 @using SantosSystemRise.Services
 @using SantosSystemRise.Models
 @inject RiseControlService ControlService
@@ -15,7 +15,7 @@
     </header>
 
     <div class="device-list">
-        @* Cabecera con clases de columna para alineación quirúrgica *@
+        @* Cabecera con alineación de 3 columnas *@
         <div class="list-labels">
             <span class="col-main">DISPOSITIVO</span>
             <span class="col-mac">DIRECCIÓN MAC</span>
@@ -25,20 +25,22 @@
         @foreach (var device in ControlService.GetAllDevices())
         {
             <div class="device-row animate-pop">
-                @* Columna 1: Icono y Nombre *@
+                @* Columna 1: Icono y Nombre ALINEADOS HORIZONTALMENTE *@
                 <div class="col-main">
                     <div class="device-icon-box">
                         <i class="bi @(string.IsNullOrEmpty(device.TypeIcon) ? "bi-pc-display" : device.TypeIcon)"></i>
                     </div>
-                    <div class="device-name">@device.Name</div>
+                    <div class="device-info">
+                        <div class="device-name">@device.Name</div>
+                    </div>
                 </div>
 
-                @* Columna 2: MAC con badge centrado *@
+                @* Columna 2: MAC *@
                 <div class="col-mac">
                     <code class="mac-badge">@device.MacAddress</code>
                 </div>
 
-                @* Columna 3: Botones alineados a la derecha *@
+                @* Columna 3: Botones *@
                 <div class="col-actions">
                     <button class="action-btn btn-power" title="Enviar Rise-Pulse" @onclick="() => ControlService.SendMagicPacket(device.Id)">
                         <i class="bi bi-lightning-charge-fill"></i>
@@ -60,34 +62,32 @@
     <div class="modal-overlay">
         <div class="modal-content animate-pop">
             <div class="modal-header-premium">
-                <h3 style="font-family: 'Orbitron', sans-serif; color: var(--accent); margin-bottom: 5px;">
-                    @(isEditing ? "EDITAR EQUIPO" : "NUEVO EQUIPO")
-                </h3>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 25px;">Protocolo de encendido remoto</p>
+                <h3>@(isEditing ? "EDITAR EQUIPO" : "NUEVO EQUIPO")</h3>
+                <p>Protocolo de encendido remoto activo</p>
             </div>
             
             <div class="form-body">
                 <div class="input-group">
-                    <label style="display: block; font-size: 0.7rem; color: var(--accent); margin-bottom: 5px;">NOMBRE</label>
+                    <label>NOMBRE</label>
                     <input @bind="tempDevice.Name" class="form-input" placeholder="Ej: Estación CNC 01" />
                 </div>
                 <div class="input-group">
-                    <label style="display: block; font-size: 0.7rem; color: var(--accent); margin-bottom: 5px;">HOSTNAME</label>
+                    <label>HOSTNAME</label>
                     <input @bind="tempDevice.Hostname" class="form-input" placeholder="SANTOS-PC01" />
                 </div>
                 <div class="input-group">
-                    <label style="display: block; font-size: 0.7rem; color: var(--accent); margin-bottom: 5px;">DIRECCIÓN MAC</label>
+                    <label>DIRECCIÓN MAC</label>
                     <input @bind="tempDevice.MacAddress" class="form-input" placeholder="00:00:00:00:00:00" />
                 </div>
                 <div class="input-group">
-                    <label style="display: block; font-size: 0.7rem; color: var(--accent); margin-bottom: 5px;">IP BROADCAST</label>
+                    <label>IP BROADCAST</label>
                     <input @bind="tempDevice.BroadcastIP" class="form-input" />
                 </div>
             </div>
 
-            <div class="modal-footer-premium" style="display: flex; gap: 15px; margin-top: 30px;">
-                <button @onclick="Save" class="add-device-btn" style="flex: 1; background: var(--accent); color: var(--bg-dark);">GUARDAR</button>
-                <button @onclick="() => showModal = false" class="add-device-btn" style="flex: 1; border-color: var(--danger); color: var(--danger);">CANCELAR</button>
+            <div class="modal-footer-premium">
+                <button @onclick="Save" class="btn-save">GUARDAR CAMBIOS</button>
+                <button @onclick="() => showModal = false" class="btn-cancel">CANCELAR</button>
             </div>
         </div>
     </div>

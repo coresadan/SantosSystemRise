@@ -1,4 +1,4 @@
-/* Importación de fuentes */
+/* --- FUENTES Y VARIABLES --- */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;400;600;800&family=JetBrains+Mono&display=swap');
 
 :root {
@@ -20,13 +20,146 @@ body {
     min-height: 100vh;
 }
 
+/* --- LOGIN CORPORATIVO SYSTEMRISE (SUTIL + ELEGANTE, SIN LÍNEA) --- */
+
+.login-screen {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #0d1528 0%, #020617 100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10000;
+    backdrop-filter: blur(6px);
+}
+
+/* Contenedor corporativo */
+.login-container {
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 18px;
+    width: 400px;
+    padding: 45px 40px;
+    text-align: center;
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.12);
+    position: relative;
+    overflow: hidden;
+    /* Animación corporativa */
+    opacity: 0;
+    transform: translateY(15px);
+    animation: loginFadeUp 0.45s ease-out forwards;
+}
+
+@keyframes loginFadeUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header */
+.login-header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.7rem;
+    letter-spacing: 4px;
+    margin-bottom: 5px;
+    color: #fff;
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+}
+
+.login-header p {
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 35px;
+    opacity: 0.8;
+}
+
+/* Campo de entrada */
+.login-field {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.login-input {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 14px 16px 14px 48px;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    outline: none;
+    transition: 0.25s;
+}
+
+    .login-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+        background: rgba(255,255,255,0.06);
+    }
+
+/* Icono */
+.login-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent);
+    opacity: 0.7;
+    font-size: 1rem;
+}
+
+/* Botón */
+.login-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: #020617;
+    font-weight: 800;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: 0.25s;
+    text-transform: uppercase;
+}
+
+    .login-btn:hover {
+        box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
+        transform: translateY(-2px);
+    }
+
+/* Footer */
+.login-footer-text {
+    margin-top: 28px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    opacity: 0.7;
+}
+
+
+
+
+/* --- ESTRUCTURA DEL PANEL PRINCIPAL --- */
 .system-container {
     padding: 40px;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-/* --- HEADER Y TÍTULO ELEGANTE (SIN MAREOS) --- */
 .main-header {
     display: flex;
     justify-content: space-between;
@@ -44,7 +177,6 @@ body {
     align-items: center;
 }
 
-/* EFECTO LATIDO SUAVE PARA SANTOS */
 .brand-santos-glow {
     font-weight: 900;
     color: #fff;
@@ -65,7 +197,6 @@ body {
     }
 }
 
-/* EFECTO FLUJO METÁLICO PARA SYSTEMRISE */
 .brand-sub {
     font-weight: 200;
     background: linear-gradient(90deg, #94a3b8, #fff, #94a3b8);
@@ -81,86 +212,7 @@ body {
     }
 }
 
-/* --- MODAL REDISEÑADO (PREMIUM) --- */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(2, 6, 23, 0.8);
-    backdrop-filter: blur(8px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-
-.modal-content {
-    background: #0f172a;
-    border: 1px solid var(--accent);
-    border-radius: 20px;
-    padding: 35px;
-    width: 480px;
-    box-shadow: 0 0 40px rgba(0,0,0,0.6), inset 0 0 20px rgba(56, 189, 248, 0.05);
-    position: relative;
-}
-
-.modal-header-premium h3 {
-    font-family: 'Orbitron', sans-serif;
-    color: var(--accent);
-    margin: 0 0 5px 0;
-    font-size: 1.2rem;
-    letter-spacing: 1px;
-}
-
-.modal-header-premium p {
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    margin-bottom: 25px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    padding-bottom: 15px;
-}
-
-.input-group {
-    margin-bottom: 20px;
-}
-
-    .input-group label {
-        display: block;
-        font-size: 0.65rem;
-        font-weight: 800;
-        color: var(--accent);
-        text-transform: uppercase;
-        margin-bottom: 8px;
-        letter-spacing: 1px;
-    }
-
-.form-input {
-    width: 100%;
-    background: rgba(30, 41, 59, 0.4);
-    border: 1px solid rgba(255,255,255,0.1);
-    color: #fff;
-    padding: 12px 15px;
-    border-radius: 10px;
-    outline: none;
-    transition: 0.3s;
-    font-family: 'Inter', sans-serif;
-}
-
-    .form-input:focus {
-        border-color: var(--accent);
-        background: rgba(30, 41, 59, 0.6);
-        box-shadow: 0 0 10px var(--accent-glow);
-    }
-
-.modal-footer-premium {
-    display: flex;
-    gap: 15px;
-    margin-top: 30px;
-}
-
-/* --- LISTA Y BOTONES --- */
+/* --- LISTA DE DISPOSITIVOS --- */
 .device-list {
     display: flex;
     flex-direction: column;
@@ -199,7 +251,42 @@ body {
         background: rgba(30, 41, 59, 0.7);
     }
 
-.add-device-btn {
+.col-main {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.device-icon-box {
+    width: 38px;
+    height: 38px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    font-size: 1.1rem;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.device-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.mac-badge {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(0,0,0,0.4);
+    color: var(--accent);
+    padding: 6px 15px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    border: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+/* --- BOTONES Y ACCIONES --- */
+.add-device-btn, .btn-save {
     background: transparent;
     border: 1px solid var(--accent);
     color: var(--accent);
@@ -207,11 +294,13 @@ body {
     border-radius: 50px;
     font-weight: 700;
     font-size: 0.75rem;
+    font-family: 'Orbitron', sans-serif;
     cursor: pointer;
     transition: 0.3s;
+    text-transform: uppercase;
 }
 
-    .add-device-btn:hover {
+    .add-device-btn:hover, .btn-save:hover {
         background: var(--accent);
         color: var(--bg-dark);
         box-shadow: 0 0 20px var(--accent-glow);
@@ -220,13 +309,8 @@ body {
 .btn-save {
     background: var(--accent);
     color: var(--bg-dark);
-    border: none;
-    padding: 12px;
     border-radius: 10px;
-    font-weight: 700;
-    cursor: pointer;
     flex: 1;
-    transition: 0.3s;
 }
 
 .btn-cancel {
@@ -238,17 +322,6 @@ body {
     font-weight: 700;
     cursor: pointer;
     flex: 1;
-    transition: 0.3s;
-}
-
-.btn-save:hover {
-    filter: brightness(1.2);
-    box-shadow: 0 0 15px var(--accent-glow);
-}
-
-.btn-cancel:hover {
-    background: rgba(255,255,255,0.05);
-    color: #fff;
 }
 
 .col-actions {
@@ -286,18 +359,153 @@ body {
     color: #020617;
 }
 
-.animate-pop {
-    animation: popIn 0.4s ease-out;
+/* --- MODAL REDISEÑADO PREMIUM --- */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(2, 6, 23, 0.75);
+    backdrop-filter: blur(12px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    animation: fadeIn 0.35s ease forwards;
 }
 
-@keyframes popIn {
+.modal-content {
+    width: 520px;
+    background: linear-gradient(180deg, #0f172a 0%, #0a1220 100%);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 22px;
+    padding: 40px 45px;
+    box-shadow: 0 0 35px rgba(56, 189, 248, 0.15);
+    position: relative;
+    opacity: 0;
+    transform: translateY(20px) scale(0.92);
+    animation: modalPop 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Header */
+.modal-header-premium {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+    .modal-header-premium h3 {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.4rem;
+        letter-spacing: 3px;
+        color: #fff;
+        margin-bottom: 8px;
+        text-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .modal-header-premium p {
+        font-size: 0.7rem;
+        color: var(--accent);
+        letter-spacing: 2px;
+        opacity: 0.8;
+    }
+
+/* Inputs */
+.input-group {
+    margin-bottom: 22px;
+    display: flex;
+    flex-direction: column;
+}
+
+    .input-group label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--accent);
+        margin-bottom: 6px;
+        letter-spacing: 1px;
+    }
+
+.form-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    transition: 0.25s;
+}
+
+    .form-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 12px var(--accent-glow);
+        background: rgba(15, 23, 42, 0.75);
+    }
+
+/* Footer */
+.modal-footer-premium {
+    margin-top: 35px;
+    display: flex;
+    gap: 15px;
+}
+
+.btn-save {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    background: var(--accent);
+    color: #020617;
+    font-weight: 900;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 2px;
+    border: none;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+    .btn-save:hover {
+        box-shadow: 0 0 20px var(--accent-glow);
+        transform: translateY(-2px);
+    }
+
+.btn-cancel {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    color: var(--text-muted);
+    border: 1px solid rgba(255,255,255,0.1);
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+    .btn-cancel:hover {
+        background: rgba(255,255,255,0.12);
+        color: #fff;
+    }
+
+/* Animaciones */
+@keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
+    }
+}
+
+@keyframes modalPop {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.92);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }
