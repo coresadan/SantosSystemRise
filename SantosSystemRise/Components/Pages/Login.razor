@@ -1,0 +1,48 @@
+﻿@page "/login"
+@inject IConfiguration Config
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthProvider
+builder.Services.AddAuthorizationCore();
+@using Microsoft.AspNetCore.Components.Authorization
+@using SantosSystemRise.Services
+
+
+<div class="login-container animate-pop">
+    <div class="login-box">
+        <h1 class="login-title">SANTOS <span>SystemRise</span></h1>
+
+        <p class="login-sub">Acceso restringido</p>
+
+        <input type="password" @bind="password" placeholder="Contraseña" class="login-input" />
+
+        <button class="login-btn" @onclick="Validate">
+            <i class="bi bi-shield-lock-fill"></i>
+            ENTRAR
+        </button>
+
+        @if (error)
+        {
+            <p class="login-error">Contraseña incorrecta</p>
+        }
+    </div>
+</div>
+
+@code {
+    private string password = "";
+    private bool error = false;
+
+    private void Validate()
+    {
+        var correct = Config["PanelPassword"];
+
+        if (password == correct)
+        {
+            (AuthProvider as SimpleAuthProvider)!.Login();
+            Nav.NavigateTo("/");
+        }
+        else
+        {
+            error = true;
+        }
+    }
+}
