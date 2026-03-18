@@ -8,7 +8,6 @@ public class Device
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string MacAddress { get; set; } = string.Empty;
-    public string BroadcastIP { get; set; } = string.Empty;
 
 
     /* 🔥 Estas propiedades NO se guardan en la BD */

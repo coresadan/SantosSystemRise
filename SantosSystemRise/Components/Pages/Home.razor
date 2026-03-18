@@ -95,10 +95,6 @@
                     <label>DIRECCIÓN MAC</label>
                     <input @bind="tempDevice.MacAddress" class="form-input" placeholder="00:00:00:00:00:00" />
                 </div>
-                <div class="input-group">
-                    <label>IP BROADCAST</label>
-                    <input @bind="tempDevice.BroadcastIP" class="form-input" />
-                </div>
             </div>
 
             <div class="modal-footer-premium">
@@ -143,19 +139,15 @@
                 {
                     Id = d.Id,
                     Name = d.Name,
-                    // Hostname eliminado de la asignación
-                    MacAddress = d.MacAddress,
-                    BroadcastIP = d.BroadcastIP
+                    MacAddress = d.MacAddress
+                    // BroadcastIP eliminado
                 };
                 isEditing = true;
             }
         }
         else
         {
-            tempDevice = new Device
-            {
-                BroadcastIP = "172.16.255.255"
-            };
+            tempDevice = new Device();
             isEditing = false;
         }
         showModal = true;
@@ -163,7 +155,7 @@
 
     private async Task Save()
     {
-        if (!string.IsNullOrWhiteSpace(tempDevice.Name))
+        if (!string.IsNullOrWhiteSpace(tempDevice.Name) && !string.IsNullOrWhiteSpace(tempDevice.MacAddress))
         {
             if (isEditing)
                 await ControlService.UpdateDevice(tempDevice);
