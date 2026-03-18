@@ -1,4 +1,6 @@
 ﻿using SantosSystemRise.Models;
+using SantosSystemRise.Data;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Net.Sockets;
 
@@ -6,69 +8,63 @@ namespace SantosSystemRise.Services;
 
 public class RiseControlService
 {
-    private readonly List<Device> _devices = [];
-    private readonly List<DeviceType> _types = [];
+    private readonly SystemRiseContext _context;
 
-    public RiseControlService()
+    public RiseControlService(SystemRiseContext context)
     {
-        _types.AddRange([
-            new DeviceType { Id = 1, Label = "Estación de Control", Icon = "bi-display" },
-            new DeviceType { Id = 2, Label = "Servidor Local", Icon = "bi-pc-display-horizontal" },
-            new DeviceType { Id = 3, Label = "Maquinaria CNC", Icon = "bi-gear-fill" }
-        ]);
+        _context = context;
+    }
 
-        _devices.Add(new Device
+    // ⭐ Obtener todos los dispositivos desde SQLite
+    public async Task<List<Device>> GetAllDevices()
+    {
+        var devices = await _context.Devices
+            .AsNoTracking()
+            .ToListAsync();
+
+        // Icono por defecto (ya no hay TypeId)
+        foreach (var d in devices)
+            d.TypeIcon = "bi-pc-display";
+
+        return devices;
+    }
+
+    // ⭐ Añadir un dispositivo a SQLite
+    public async Task AddDevice(Device device)
+    {
+        _context.Devices.Add(device);
+        await _context.SaveChangesAsync();
+    }
+
+    // ⭐ Actualizar un dispositivo en SQLite (versión correcta)
+    public async Task UpdateDevice(Device updatedDevice)
+    {
+        var existing = await _context.Devices.FindAsync(updatedDevice.Id);
+        if (existing == null)
+            return;
+
+        existing.Name = updatedDevice.Name;
+        existing.MacAddress = updatedDevice.MacAddress;
+        existing.BroadcastIP = updatedDevice.BroadcastIP;
+
+        await _context.SaveChangesAsync();
+    }
+
+    // ⭐ Eliminar un dispositivo de SQLite
+    public async Task RemoveDevice(int id)
+    {
+        var device = await _context.Devices.FindAsync(id);
+        if (device != null)
         {
-            Id = 1,
-            Name = "ASRock Z77 Pro4 - Admin",
-            Hostname = "ASROCK-ADMIN",
-            MacAddress = "BC-5F-F4-90-9E-53",
-            BroadcastIP = "172.16.255.255",
-            TypeId = 1
-        });
-    }
-
-    public IEnumerable<Device> GetAllDevices()
-    {
-        return from d in _devices
-               join t in _types on d.TypeId equals t.Id
-               select new Device
-               {
-                   Id = d.Id,
-                   Name = d.Name,
-                   Hostname = d.Hostname,
-                   MacAddress = d.MacAddress,
-                   BroadcastIP = d.BroadcastIP,
-                   TypeId = d.TypeId,
-                   TypeIcon = t.Icon
-                   // Eliminamos TypeLabel e IP para limpiar la UI
-               };
-    }
-
-    public void AddDevice(Device device)
-    {
-        device.Id = _devices.Count != 0 ? _devices.Max(x => x.Id) + 1 : 1;
-        _devices.Add(device);
-    }
-
-    public void UpdateDevice(Device updatedDevice)
-    {
-        var existing = _devices.FirstOrDefault(d => d.Id == updatedDevice.Id);
-        if (existing != null)
-        {
-            existing.Name = updatedDevice.Name;
-            existing.MacAddress = updatedDevice.MacAddress;
-            existing.BroadcastIP = updatedDevice.BroadcastIP;
-            existing.TypeId = updatedDevice.TypeId;
-            existing.Hostname = updatedDevice.Hostname;
+            _context.Devices.Remove(device);
+            await _context.SaveChangesAsync();
         }
     }
 
-    public void RemoveDevice(int id) => _devices.RemoveAll(x => x.Id == id);
-
+    // ⭐ Wake-on-LAN
     public async Task SendMagicPacket(int deviceId)
     {
-        var device = _devices.FirstOrDefault(d => d.Id == deviceId);
+        var device = await _context.Devices.FindAsync(deviceId);
         if (device is null) return;
 
         try
@@ -77,14 +73,22 @@ public class RiseControlService
             byte[] macBytes = Convert.FromHexString(cleanMac);
             byte[] packet = new byte[102];
             Array.Fill(packet, (byte)0xff, 0, 6);
-            for (int i = 0; i < 16; i++) Array.Copy(macBytes, 0, packet, (i + 1) * 6, 6);
+            for (int i = 0; i < 16; i++)
+                Array.Copy(macBytes, 0, packet, (i + 1) * 6, 6);
 
             using var client = new UdpClient();
             client.EnableBroadcast = true;
-            string targetBroadcast = string.IsNullOrWhiteSpace(device.BroadcastIP) ? "255.255.255.255" : device.BroadcastIP;
+
+            string targetBroadcast = string.IsNullOrWhiteSpace(device.BroadcastIP)
+                ? "255.255.255.255"
+                : device.BroadcastIP;
+
             var broadcastIp = IPAddress.Parse(targetBroadcast);
             await client.SendAsync(packet, packet.Length, new IPEndPoint(broadcastIp, 9));
         }
-        catch (Exception) { /* Silencioso para mantener la UI limpia */ }
+        catch
+        {
+            // Silencioso para mantener la UI limpia
+        }
     }
 }

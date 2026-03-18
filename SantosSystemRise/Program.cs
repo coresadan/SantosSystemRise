@@ -1,5 +1,7 @@
 using SantosSystemRise.Components;
-using SantosSystemRise.Services; // 1. AÑADIR ESTO
+using SantosSystemRise.Services;
+using Microsoft.EntityFrameworkCore;
+using SantosSystemRise.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,8 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// 2. REGISTRAR EL SERVICIO AQUÍ
-builder.Services.AddSingleton<RiseControlService>();
+// 1. Registrar EF Core con SQLite
+builder.Services.AddDbContext<SystemRiseContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("SystemRiseDb")));
+
+// 2. Registrar tu servicio como Scoped (correcto para EF Core)
+builder.Services.AddScoped<RiseControlService>();
 
 var app = builder.Build();
 

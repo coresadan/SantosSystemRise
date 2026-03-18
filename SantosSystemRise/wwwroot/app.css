@@ -47,7 +47,6 @@ body {
     box-shadow: 0 0 25px rgba(56, 189, 248, 0.12);
     position: relative;
     overflow: hidden;
-    /* Animación corporativa */
     opacity: 0;
     transform: translateY(15px);
     animation: loginFadeUp 0.45s ease-out forwards;
@@ -150,9 +149,6 @@ body {
     opacity: 0.7;
 }
 
-
-
-
 /* --- ESTRUCTURA DEL PANEL PRINCIPAL --- */
 .system-container {
     padding: 40px;
@@ -217,18 +213,22 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    margin-top: 25px;
 }
 
-.list-labels, .device-row {
+/* GRID CORRECTO: 4 columnas (checkbox + dispositivo + mac + acciones) */
+.list-labels,
+.device-row {
     display: grid !important;
-    grid-template-columns: 2fr 1.2fr 1fr !important;
+    grid-template-columns: 40px 2fr 1.2fr 1fr !important;
     align-items: center;
     gap: 20px;
     width: 100%;
 }
 
+/* CABECERA PERFECTAMENTE ALINEADA */
 .list-labels {
-    padding: 0 30px 10px 30px;
+    padding: 0 30px 8px 30px;
     font-size: 0.65rem;
     font-weight: 800;
     color: var(--accent);
@@ -236,6 +236,27 @@ body {
     opacity: 0.6;
 }
 
+    /* Alineación vertical y horizontal */
+    .list-labels span,
+    .device-row > * {
+        display: flex;
+        align-items: center;
+    }
+
+/* Columna del checkbox */
+.col-check {
+    justify-content: center;
+}
+
+/* Checkbox */
+.device-check {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+/* Fila */
 .device-row {
     background: var(--card-bg);
     backdrop-filter: blur(12px);
@@ -250,6 +271,14 @@ body {
         transform: scale(1.005) translateX(5px);
         background: rgba(30, 41, 59, 0.7);
     }
+
+
+.device-check {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
 
 .col-main {
     display: flex;
@@ -508,4 +537,130 @@ body {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+
+    /* --- Selección global --- */
+    .select-tools {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        padding: 0 5px;
+    }
+
+    .selected-counter {
+        font-size: 0.8rem;
+        color: var(--accent);
+        opacity: 0.8;
+        font-family: 'JetBrains Mono', monospace;
+    }
+    /* --- Animación al seleccionar --- */
+    .device-row.selected {
+        border-color: var(--accent);
+        box-shadow: 0 0 12px var(--accent-glow);
+        transform: scale(1.01);
+        transition: 0.25s ease;
+    }
+
+    /* --- RESPONSIVIDAD SYSTEMRISE (VERSIÓN DEFINITIVA) --- */
+    /* 📌 Escritorio → sin cambios */
+    /* 📌 Tablets horizontales / portátiles pequeños */
+    @media (max-width: 1100px) {
+        .list-labels,
+        .device-row {
+            grid-template-columns: 28px 1.8fr 1fr 0.8fr !important;
+            gap: 12px;
+        }
+
+        .device-name {
+            font-size: 0.9rem;
+        }
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+        }
+    }
+    /* 📌 Tablets verticales / móviles grandes */
+    @media (max-width: 850px) {
+        /* Ocultamos cabecera */
+        .list-labels {
+            display: none;
+        }
+        /* Fila en dos líneas */
+        .device-row {
+            grid-template-columns: 28px 1fr !important;
+            grid-template-rows: auto auto;
+            gap: 10px;
+            padding: 14px 16px;
+        }
+        /* Checkbox centrado verticalmente */
+        .device-check {
+            grid-row: span 2;
+            align-self: center;
+        }
+        /* Icono + nombre arriba */
+        .col-main {
+            grid-column: 2 / 3;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        /* MAC debajo del nombre */
+        .col-mac {
+            grid-column: 2 / 3;
+            opacity: 0.85;
+            font-size: 0.8rem;
+        }
+        /* Acciones debajo */
+        .col-actions {
+            grid-column: 2 / 3;
+            justify-content: flex-start;
+            gap: 10px;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+        }
+    }
+    /* 📌 Móviles pequeños */
+    @media (max-width: 550px) {
+
+        .device-row {
+            padding: 12px 12px;
+            gap: 8px;
+        }
+
+        .device-icon-box {
+            width: 28px;
+            height: 28px;
+            font-size: 0.8rem;
+        }
+
+        .device-name {
+            font-size: 0.75rem;
+        }
+
+        .mac-badge {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+        }
+
+        .action-btn {
+            width: 28px;
+            height: 28px;
+        }
+        /* Herramientas de selección en columna */
+        .select-tools {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px; 
+            margin-top: 30px; 
+            margin-bottom: 20px; 
+            padding-left: 10px; 
+        }
+    }
+
+
 }

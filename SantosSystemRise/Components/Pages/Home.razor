@@ -9,23 +9,45 @@
         <div class="brand-title">
             <span class="brand-santos-glow">SANTOS</span><span class="brand-sub">SystemRise</span>
         </div>
-        <button class="add-device-btn" @onclick="() => OpenModal()">
-            <i class="bi bi-plus-circle-fill"></i> REGISTRAR TERMINAL
-        </button>
+
+        <div style="display:flex; gap:12px;">
+            <button class="add-device-btn" @onclick="WakeAllDevices">
+                <i class="bi bi-lightning-charge-fill"></i> ENCENDER TODOS
+            </button>
+
+            <button class="add-device-btn" @onclick="WakeSelectedDevices">
+                <i class="bi bi-broadcast-pin"></i> ENCENDER SELECCIONADOS
+            </button>
+
+            <button class="add-device-btn" @onclick="() => OpenModal()">
+                <i class="bi bi-plus-circle-fill"></i> REGISTRAR TERMINAL
+            </button>
+        </div>
     </header>
 
+    <div class="select-tools mt-4">
+        <button class="add-device-btn" @onclick="ToggleSelectAll">
+            @selectAllLabel
+        </button>
+
+        <span class="selected-counter">
+            @selectedCount equipos seleccionados
+        </span>
+    </div>
+
     <div class="device-list">
-        @* Cabecera con alineación de 3 columnas *@
         <div class="list-labels">
+            <span class="col-check"></span>
             <span class="col-main">DISPOSITIVO</span>
             <span class="col-mac">DIRECCIÓN MAC</span>
             <span class="col-actions">ACCIONES</span>
         </div>
 
-        @foreach (var device in ControlService.GetAllDevices())
+        @foreach (var device in Devices)
         {
-            <div class="device-row animate-pop">
-                @* Columna 1: Icono y Nombre ALINEADOS HORIZONTALMENTE *@
+            <div class="device-row animate-pop @(device.IsSelected ? "selected" : "")">
+                <input type="checkbox" @bind="device.IsSelected" class="device-check" />
+
                 <div class="col-main">
                     <div class="device-icon-box">
                         <i class="bi @(string.IsNullOrEmpty(device.TypeIcon) ? "bi-pc-display" : device.TypeIcon)"></i>
@@ -35,12 +57,10 @@
                     </div>
                 </div>
 
-                @* Columna 2: MAC *@
                 <div class="col-mac">
                     <code class="mac-badge">@device.MacAddress</code>
                 </div>
 
-                @* Columna 3: Botones *@
                 <div class="col-actions">
                     <button class="action-btn btn-power" title="Enviar Rise-Pulse" @onclick="() => ControlService.SendMagicPacket(device.Id)">
                         <i class="bi bi-lightning-charge-fill"></i>
@@ -72,10 +92,6 @@
                     <input @bind="tempDevice.Name" class="form-input" placeholder="Ej: Estación CNC 01" />
                 </div>
                 <div class="input-group">
-                    <label>HOSTNAME</label>
-                    <input @bind="tempDevice.Hostname" class="form-input" placeholder="SANTOS-PC01" />
-                </div>
-                <div class="input-group">
                     <label>DIRECCIÓN MAC</label>
                     <input @bind="tempDevice.MacAddress" class="form-input" placeholder="00:00:00:00:00:00" />
                 </div>
@@ -97,43 +113,84 @@
     private bool showModal = false;
     private bool isEditing = false;
     private Device tempDevice = new();
+    private List<Device> Devices = new();
+
+    /* 🔥 Selección global */
+    private bool allSelected = false;
+    private string selectAllLabel => allSelected ? "DESELECCIONAR TODO" : "SELECCIONAR TODO";
+    private int selectedCount => Devices.Count(d => d.IsSelected);
+
+    private void ToggleSelectAll()
+    {
+        allSelected = !allSelected;
+        foreach (var d in Devices)
+            d.IsSelected = allSelected;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Devices = await ControlService.GetAllDevices();
+    }
 
     private void OpenModal(int? id = null)
     {
         if (id.HasValue)
         {
-            var d = ControlService.GetAllDevices().FirstOrDefault(x => x.Id == id);
+            var d = Devices.FirstOrDefault(x => x.Id == id);
             if (d != null)
             {
                 tempDevice = new Device
                 {
                     Id = d.Id,
                     Name = d.Name,
-                    Hostname = d.Hostname,
+                    // Hostname eliminado de la asignación
                     MacAddress = d.MacAddress,
-                    BroadcastIP = d.BroadcastIP,
-                    TypeId = d.TypeId
+                    BroadcastIP = d.BroadcastIP
                 };
                 isEditing = true;
             }
         }
         else
         {
-            tempDevice = new Device { BroadcastIP = "172.16.255.255", TypeId = 1 };
+            tempDevice = new Device
+            {
+                BroadcastIP = "172.16.255.255"
+            };
             isEditing = false;
         }
         showModal = true;
     }
 
-    private void Save()
+    private async Task Save()
     {
         if (!string.IsNullOrWhiteSpace(tempDevice.Name))
         {
-            if (isEditing) ControlService.UpdateDevice(tempDevice);
-            else ControlService.AddDevice(tempDevice);
+            if (isEditing)
+                await ControlService.UpdateDevice(tempDevice);
+            else
+                await ControlService.AddDevice(tempDevice);
+
+            Devices = await ControlService.GetAllDevices();
             showModal = false;
         }
     }
 
-    private void Remove(int id) => ControlService.RemoveDevice(id);
+    private async Task Remove(int id)
+    {
+        await ControlService.RemoveDevice(id);
+        Devices = await ControlService.GetAllDevices();
+    }
+
+    private async Task WakeAllDevices()
+    {
+        foreach (var d in Devices)
+            await ControlService.SendMagicPacket(d.Id);
+    }
+
+    private async Task WakeSelectedDevices()
+    {
+        var selected = Devices.Where(d => d.IsSelected).ToList();
+        foreach (var d in selected)
+            await ControlService.SendMagicPacket(d.Id);
+    }
 }
