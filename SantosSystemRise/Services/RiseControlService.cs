@@ -3,6 +3,7 @@ using SantosSystemRise.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Net.Sockets;
+using System.Net.NetworkInformation; // 👈 NUEVO: Para usar la clase Ping
 
 namespace SantosSystemRise.Services;
 
@@ -15,9 +16,12 @@ public class RiseControlService
         _context = context;
     }
 
+    // --- MÉTODOS DE BASE DE DATOS ---
+
     public async Task<List<Device>> GetAllDevices()
     {
         var devices = await _context.Devices.AsNoTracking().ToListAsync();
+        // Mantenemos tu lógica de iconos por defecto
         foreach (var d in devices) d.TypeIcon = "bi-pc-display";
         return devices;
     }
@@ -30,11 +34,11 @@ public class RiseControlService
 
     public async Task UpdateDevice(Device updatedDevice)
     {
-        // Buscamos por MacAddress porque es la Primary Key
         var existing = await _context.Devices.FindAsync(updatedDevice.MacAddress);
         if (existing != null)
         {
             existing.Name = updatedDevice.Name;
+            existing.IpAddress = updatedDevice.IpAddress; // 👈 NUEVO: Actualizamos también la IP
             await _context.SaveChangesAsync();
         }
     }
@@ -49,6 +53,27 @@ public class RiseControlService
         }
     }
 
+    // --- ⭐ NUEVO: DETECCIÓN REAL POR PING (IP) ---
+    // Este método es el que usará la IP de Herrajes para saber si está ON/OFF
+    public async Task<bool> IsDeviceOnline(string ipAddress)
+    {
+        if (string.IsNullOrWhiteSpace(ipAddress)) return false;
+
+        try
+        {
+            using var ping = new Ping();
+            // Enviamos un paquete y esperamos máximo 500ms
+            // Es mucho más fiable que el comando ARP
+            var reply = await ping.SendPingAsync(ipAddress, 500);
+            return reply.Status == IPStatus.Success;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    // --- LÓGICA DE ENCENDIDO (MAGIC PACKET) ---
     public async Task SendMagicPacket(string mac)
     {
         if (string.IsNullOrWhiteSpace(mac)) return;
@@ -66,13 +91,8 @@ public class RiseControlService
 
             using var client = new UdpClient();
             client.EnableBroadcast = true;
-            var broadcastIp = IPAddress.Broadcast; // 255.255.255.255
-
-            await client.SendAsync(packet, packet.Length, new IPEndPoint(broadcastIp, 9));
+            await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Broadcast, 9));
         }
-        catch (Exception)
-        {
-            // Fallo silencioso para no interrumpir la UI
-        }
+        catch { /* Silencioso */ }
     }
 }
