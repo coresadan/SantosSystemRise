@@ -1,147 +1,208 @@
-﻿@page "/home"
+﻿@page "/"
 @using SantosSystemRise.Services
 @using SantosSystemRise.Models
 @inject RiseControlService ControlService
 @rendermode InteractiveServer
 
-<div class="system-container">
-    <header class="main-header animate-pop">
-        <div class="brand-title">
-            <span class="brand-santos-glow">SANTOS</span><span class="brand-sub">SystemRise</span>
-        </div>
-
-        <div style="display:flex; gap:12px;">
-            <button class="add-device-btn" @onclick="WakeAllDevices">
-                <i class="bi bi-lightning-charge-fill"></i> ENCENDER TODOS
-            </button>
-
-            <button class="add-device-btn" @onclick="WakeSelectedDevices">
-                <i class="bi bi-broadcast-pin"></i> ENCENDER SELECCIONADOS
-            </button>
-
-            <button class="add-device-btn" @onclick="() => OpenModal()">
-                <i class="bi bi-plus-circle-fill"></i> REGISTRAR TERMINAL
-            </button>
-        </div>
-    </header>
-
-    <div class="select-tools mt-4">
-        <button class="add-device-btn" @onclick="ToggleSelectAll">
-            @selectAllLabel
-        </button>
-
-        <span class="selected-counter">
-            @selectedCount equipos seleccionados
-        </span>
-    </div>
-
-    <div class="device-list">
-        <div class="list-labels">
-            <span class="col-check"></span>
-            <span class="col-main">DISPOSITIVO</span>
-            <span class="col-mac">DIRECCIÓN MAC</span>
-            <span class="col-actions">ACCIONES</span>
-        </div>
-
-        @foreach (var device in Devices)
-        {
-            <div class="device-row animate-pop @(device.IsSelected ? "selected" : "")">
-                <input type="checkbox" @bind="device.IsSelected" class="device-check" />
-
-                <div class="col-main">
-                    <div class="device-icon-box">
-                        <i class="bi @(string.IsNullOrEmpty(device.TypeIcon) ? "bi-pc-display" : device.TypeIcon)"></i>
-                    </div>
-                    <div class="device-info">
-                        <div class="device-name">@device.Name</div>
-                    </div>
-                </div>
-
-                <div class="col-mac">
-                    <code class="mac-badge">@device.MacAddress</code>
-                </div>
-
-                <div class="col-actions">
-                    <button class="action-btn btn-power" title="Enviar Rise-Pulse" @onclick="() => ControlService.SendMagicPacket(device.Id)">
-                        <i class="bi bi-lightning-charge-fill"></i>
-                    </button>
-                    <button class="action-btn btn-edit" title="Editar" @onclick="() => OpenModal(device.Id)">
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button class="action-btn btn-delete" title="Eliminar" @onclick="() => Remove(device.Id)">
-                        <i class="bi bi-trash3-fill"></i>
-                    </button>
-                </div>
-            </div>
-        }
-    </div>
-</div>
-
-@if (showModal)
+@if (!isAuthorized)
 {
-    <div class="modal-overlay">
-        <div class="modal-content animate-pop">
-            <div class="modal-header-premium">
-                <h3>@(isEditing ? "EDITAR EQUIPO" : "NUEVO EQUIPO")</h3>
-                <p>Protocolo de encendido remoto activo</p>
-            </div>
-            
-            <div class="form-body">
-                <div class="input-group">
-                    <label>NOMBRE</label>
-                    <input @bind="tempDevice.Name" class="form-input" placeholder="Ej: Estación CNC 01" />
-                </div>
-                <div class="input-group">
-                    <label>DIRECCIÓN MAC</label>
-                    <input @bind="tempDevice.MacAddress" class="form-input" placeholder="00:00:00:00:00:00" />
-                </div>
+    @* --- PANTALLA DE LOGIN (EL MURO) --- *@
+    <div class="login-screen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; background: var(--bg-dark);">
+        <div class="login-container">
+            <div class="scanner-line"></div>
+            <div class="login-header">
+                <h1>SANTOS</h1>
+                <p>SystemRise - Acceso Restringido</p>
             </div>
 
-            <div class="modal-footer-premium">
-                <button @onclick="Save" class="btn-save">GUARDAR CAMBIOS</button>
-                <button @onclick="() => showModal = false" class="btn-cancel">CANCELAR</button>
+            <div class="login-field">
+                <input type="password"
+                       class="login-input"
+                       placeholder="INTRODUZCA CREDENCIAL.."
+                       @bind="passwordInput"
+                       @onkeyup="HandleKeyUp"
+                       focus />
+            </div>
+
+            <button class="login-btn" @onclick="CheckPassword">
+                AUTORIZAR INGRESO
+            </button>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <p style="color: #ff4d4d; font-size: 0.7rem; margin-top: 15px; font-family: 'JetBrains Mono'; text-align: center;">
+                    @errorMessage
+                </p>
+            }
+
+            <div class="login-footer-text">
+                Protocolo de Seguridad Activo
             </div>
         </div>
     </div>
 }
+else
+{
+    @* --- CONTENIDO PRINCIPAL (SOLO SE VE SI ISAUTHORIZED ES TRUE) --- *@
+    <div class="system-container animate-fade-in">
+        <header class="main-header animate-pop">
+            <div class="brand-title">
+                <span class="brand-santos-glow">SANTOS</span><span class="brand-sub">SystemRise</span>
+            </div>
+
+            <div style="display:flex; gap:12px;">
+                <button class="add-device-btn" @onclick="WakeAllDevices">
+                    <i class="bi bi-lightning-charge-fill"></i> ENCENDER TODOS
+                </button>
+                <button class="add-device-btn" @onclick="WakeSelectedDevices">
+                    <i class="bi bi-broadcast-pin"></i> ENCENDER SELECCIONADOS
+                </button>
+                <button class="add-device-btn" @onclick="() => OpenModal()">
+                    <i class="bi bi-plus-circle-fill"></i> REGISTRAR TERMINAL
+                </button>
+                @* Botón opcional para cerrar sesión *@
+                <button class="action-btn btn-delete" style="margin-left:10px;" @onclick="() => isAuthorized = false" title="Cerrar Sesión">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="select-tools mt-4">
+            <button class="add-device-btn" @onclick="ToggleSelectAll">
+                @selectAllLabel
+            </button>
+            <span class="selected-counter">
+                @selectedCount equipos seleccionados
+            </span>
+        </div>
+
+        <div class="device-list">
+            <div class="list-labels">
+                <span class="col-check"></span>
+                <span class="col-main">DISPOSITIVO</span>
+                <span class="col-mac">DIRECCIÓN MAC</span>
+                <span class="col-actions">ACCIONES</span>
+            </div>
+
+            @foreach (var device in Devices)
+            {
+                <div class="device-row animate-pop @(device.IsSelected ? "selected" : "")">
+                    <input type="checkbox" @bind="device.IsSelected" class="device-check" />
+
+                    <div class="col-main">
+                        <div class="device-icon-box">
+                            <i class="bi @(string.IsNullOrEmpty(device.TypeIcon) ? "bi-pc-display" : device.TypeIcon)"></i>
+                        </div>
+                        <div class="device-info">
+                            <div class="device-name">@device.Name</div>
+                        </div>
+                    </div>
+
+                    <div class="col-mac">
+                        <code class="mac-badge">@device.MacAddress</code>
+                    </div>
+
+                    <div class="col-actions">
+                        <button class="action-btn btn-power" title="Enviar Pulse" @onclick="() => ControlService.SendMagicPacket(device.MacAddress)">
+                            <i class="bi bi-lightning-charge-fill"></i>
+                        </button>
+                        <button class="action-btn btn-edit" title="Editar" @onclick="() => OpenModal(device.MacAddress)">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="action-btn btn-delete" title="Eliminar" @onclick="() => Remove(device.MacAddress)">
+                            <i class="bi bi-trash3-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    @* --- MODAL DE REGISTRO/EDICIÓN --- *@
+    @if (showModal)
+    {
+        <div class="modal-overlay">
+            <div class="modal-content animate-pop">
+                <div class="modal-header-premium">
+                    <h3>@(isEditing ? "EDITAR EQUIPO" : "NUEVO EQUIPO")</h3>
+                    <p>Protocolo de encendido remoto activo</p>
+                </div>
+                
+                <div class="form-body">
+                    <div class="input-group">
+                        <label>NOMBRE</label>
+                        <input @bind="tempDevice.Name" class="form-input" placeholder="Ej: Estación CNC 01" />
+                    </div>
+                    <div class="input-group">
+                        <label>DIRECCIÓN MAC</label>
+                        <input @bind="tempDevice.MacAddress" class="form-input" placeholder="00:00:00:00:00:00" disabled="@isEditing" />
+                    </div>
+                </div>
+
+                <div class="modal-footer-premium">
+                    <button @onclick="Save" class="btn-save">GUARDAR CAMBIOS</button>
+                    <button @onclick="() => showModal = false" class="btn-cancel">CANCELAR</button>
+                </div>
+            </div>
+        </div>
+    }
+}
 
 @code {
+    // LÓGICA DE SEGURIDAD
+    private bool isAuthorized = false;
+    private string passwordInput = "";
+    private string errorMessage = "";
+    private const string CORRECT_PASSWORD = "SANTOS2026";
+
+    private void CheckPassword()
+    {
+        if (passwordInput == CORRECT_PASSWORD)
+        {
+            isAuthorized = true;
+            errorMessage = "";
+        }
+        else
+        {
+            errorMessage = "ACCESO DENEGADO: CREDENCIAL INVÁLIDA";
+            passwordInput = "";
+        }
+    }
+
+    private void HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") CheckPassword();
+    }
+
+    // LÓGICA DE NEGOCIO (DISPOSITIVOS)
     private bool showModal = false;
     private bool isEditing = false;
     private Device tempDevice = new();
     private List<Device> Devices = new();
-
-    /* 🔥 Selección global */
     private bool allSelected = false;
+
     private string selectAllLabel => allSelected ? "DESELECCIONAR TODO" : "SELECCIONAR TODO";
     private int selectedCount => Devices.Count(d => d.IsSelected);
-
-    private void ToggleSelectAll()
-    {
-        allSelected = !allSelected;
-        foreach (var d in Devices)
-            d.IsSelected = allSelected;
-    }
 
     protected override async Task OnInitializedAsync()
     {
         Devices = await ControlService.GetAllDevices();
     }
 
-    private void OpenModal(int? id = null)
+    private void ToggleSelectAll()
     {
-        if (id.HasValue)
+        allSelected = !allSelected;
+        foreach (var d in Devices) d.IsSelected = allSelected;
+    }
+
+    private void OpenModal(string mac = null)
+    {
+        if (!string.IsNullOrEmpty(mac))
         {
-            var d = Devices.FirstOrDefault(x => x.Id == id);
+            var d = Devices.FirstOrDefault(x => x.MacAddress == mac);
             if (d != null)
             {
-                tempDevice = new Device
-                {
-                    Id = d.Id,
-                    Name = d.Name,
-                    MacAddress = d.MacAddress
-                    // BroadcastIP eliminado
-                };
+                tempDevice = new Device { Name = d.Name, MacAddress = d.MacAddress };
                 isEditing = true;
             }
         }
@@ -157,32 +218,28 @@
     {
         if (!string.IsNullOrWhiteSpace(tempDevice.Name) && !string.IsNullOrWhiteSpace(tempDevice.MacAddress))
         {
-            if (isEditing)
-                await ControlService.UpdateDevice(tempDevice);
-            else
-                await ControlService.AddDevice(tempDevice);
+            if (isEditing) await ControlService.UpdateDevice(tempDevice);
+            else await ControlService.AddDevice(tempDevice);
 
             Devices = await ControlService.GetAllDevices();
             showModal = false;
         }
     }
 
-    private async Task Remove(int id)
+    private async Task Remove(string mac)
     {
-        await ControlService.RemoveDevice(id);
+        await ControlService.RemoveDevice(mac);
         Devices = await ControlService.GetAllDevices();
     }
 
     private async Task WakeAllDevices()
     {
-        foreach (var d in Devices)
-            await ControlService.SendMagicPacket(d.Id);
+        foreach (var d in Devices) await ControlService.SendMagicPacket(d.MacAddress);
     }
 
     private async Task WakeSelectedDevices()
     {
         var selected = Devices.Where(d => d.IsSelected).ToList();
-        foreach (var d in selected)
-            await ControlService.SendMagicPacket(d.Id);
+        foreach (var d in selected) await ControlService.SendMagicPacket(d.MacAddress);
     }
 }

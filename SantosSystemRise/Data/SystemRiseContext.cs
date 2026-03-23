@@ -15,7 +15,7 @@ public class SystemRiseContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Device>()
-            .HasKey(d => d.Id);
+            .HasKey(d => d.MacAddress);
 
         base.OnModelCreating(modelBuilder);
     }
