@@ -1,12 +1,14 @@
 ﻿@page "/"
 @using SantosSystemRise.Services
 @using SantosSystemRise.Models
+@using System.Timers
 @inject RiseControlService ControlService
+@implements IDisposable
 @rendermode InteractiveServer
 
 @if (!isAuthorized)
 {
-    @* --- PANTALLA DE LOGIN (EL MURO) --- *@
+    @* --- PANTALLA DE LOGIN (EL MURO) - INTACTA --- *@
     <div class="login-screen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; background: var(--bg-dark);">
         <div class="login-container">
             <div class="scanner-line"></div>
@@ -21,7 +23,7 @@
                        placeholder="INTRODUZCA CREDENCIAL.."
                        @bind="passwordInput"
                        @onkeyup="HandleKeyUp"
-                       focus />
+                       autofocus />
             </div>
 
             <button class="login-btn" @onclick="CheckPassword">
@@ -43,7 +45,7 @@
 }
 else
 {
-    @* --- CONTENIDO PRINCIPAL (SOLO SE VE SI ISAUTHORIZED ES TRUE) --- *@
+    @* --- CONTENIDO PRINCIPAL - ESTRUCTURA RESPETADA AL 100% --- *@
     <div class="system-container animate-fade-in">
         <header class="main-header animate-pop">
             <div class="brand-title">
@@ -60,7 +62,6 @@ else
                 <button class="add-device-btn" @onclick="() => OpenModal()">
                     <i class="bi bi-plus-circle-fill"></i> REGISTRAR TERMINAL
                 </button>
-                @* Botón opcional para cerrar sesión *@
                 <button class="action-btn btn-delete" style="margin-left:10px;" @onclick="() => isAuthorized = false" title="Cerrar Sesión">
                     <i class="bi bi-box-arrow-right"></i>
                 </button>
@@ -86,15 +87,23 @@ else
 
             @foreach (var device in Devices)
             {
-                <div class="device-row animate-pop @(device.IsSelected ? "selected" : "")">
+                <div class="device-row animate-pop @(device.IsSelected ? "selected" : "")"
+                     style="border-left: 4px solid @GetStatusColor(device.Status)">
+                    
                     <input type="checkbox" @bind="device.IsSelected" class="device-check" />
 
                     <div class="col-main">
                         <div class="device-icon-box">
-                            <i class="bi @(string.IsNullOrEmpty(device.TypeIcon) ? "bi-pc-display" : device.TypeIcon)"></i>
+                            @* Añadimos el color dinámico al icono *@
+                            <i class="bi @(string.IsNullOrEmpty(device.TypeIcon) ? "bi-pc-display" : device.TypeIcon) @(device.Status == DeviceStatus.Waking ? "spin" : "")"
+                               style="color: @GetStatusColor(device.Status)"></i>
                         </div>
                         <div class="device-info">
                             <div class="device-name">@device.Name</div>
+                            @if (!string.IsNullOrEmpty(device.IpAddress))
+                            {
+                                <small style="color: #666; font-size: 0.7rem;">IP: @device.IpAddress</small>
+                            }
                         </div>
                     </div>
 
@@ -103,7 +112,8 @@ else
                     </div>
 
                     <div class="col-actions">
-                        <button class="action-btn btn-power" title="Enviar Pulse" @onclick="() => ControlService.SendMagicPacket(device.MacAddress)">
+                        @* Cambiamos a IndividualWake para manejar el estado Naranja *@
+                        <button class="action-btn btn-power" title="Enviar Pulse" @onclick="() => IndividualWake(device)">
                             <i class="bi bi-lightning-charge-fill"></i>
                         </button>
                         <button class="action-btn btn-edit" title="Editar" @onclick="() => OpenModal(device.MacAddress)">
@@ -118,7 +128,7 @@ else
         </div>
     </div>
 
-    @* --- MODAL DE REGISTRO/EDICIÓN --- *@
+    @* --- MODAL DE REGISTRO/EDICIÓN - AÑADIDO CAMPO IP --- *@
     @if (showModal)
     {
         <div class="modal-overlay">
@@ -132,6 +142,10 @@ else
                     <div class="input-group">
                         <label>NOMBRE</label>
                         <input @bind="tempDevice.Name" class="form-input" placeholder="Ej: Estación CNC 01" />
+                    </div>
+                    <div class="input-group">
+                        <label>DIRECCIÓN IP</label>
+                        <input @bind="tempDevice.IpAddress" class="form-input" placeholder="172.16.x.x" />
                     </div>
                     <div class="input-group">
                         <label>DIRECCIÓN MAC</label>
@@ -149,7 +163,7 @@ else
 }
 
 @code {
-    // LÓGICA DE SEGURIDAD
+    // --- SEGURIDAD ---
     private bool isAuthorized = false;
     private string passwordInput = "";
     private string errorMessage = "";
@@ -157,42 +171,61 @@ else
 
     private void CheckPassword()
     {
-        if (passwordInput == CORRECT_PASSWORD)
-        {
-            isAuthorized = true;
-            errorMessage = "";
-        }
-        else
-        {
-            errorMessage = "ACCESO DENEGADO: CREDENCIAL INVÁLIDA";
-            passwordInput = "";
-        }
+        if (passwordInput == CORRECT_PASSWORD) { isAuthorized = true; errorMessage = ""; }
+        else { errorMessage = "ACCESO DENEGADO"; passwordInput = ""; }
     }
 
-    private void HandleKeyUp(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter") CheckPassword();
-    }
+    private void HandleKeyUp(KeyboardEventArgs e) { if (e.Key == "Enter") CheckPassword(); }
 
-    // LÓGICA DE NEGOCIO (DISPOSITIVOS)
-    private bool showModal = false;
-    private bool isEditing = false;
+    // --- LÓGICA DE DISPOSITIVOS ---
+    private bool showModal = false, isEditing = false, allSelected = false;
     private Device tempDevice = new();
     private List<Device> Devices = new();
-    private bool allSelected = false;
+    private System.Timers.Timer? _refreshTimer;
 
     private string selectAllLabel => allSelected ? "DESELECCIONAR TODO" : "SELECCIONAR TODO";
     private int selectedCount => Devices.Count(d => d.IsSelected);
 
     protected override async Task OnInitializedAsync()
     {
-        Devices = await ControlService.GetAllDevices();
+        await LoadDevices();
+        
+        // Configuramos el timer para refrescar estados cada 10 segundos
+        _refreshTimer = new System.Timers.Timer(10000);
+        _refreshTimer.Elapsed += async (s, e) => await InvokeAsync(RefreshStatuses);
+        _refreshTimer.AutoReset = true;
+        _refreshTimer.Enabled = true;
     }
 
-    private void ToggleSelectAll()
+    private async Task LoadDevices() => Devices = await ControlService.GetAllDevices();
+
+    private async Task RefreshStatuses()
     {
-        allSelected = !allSelected;
-        foreach (var d in Devices) d.IsSelected = allSelected;
+        if (!isAuthorized || showModal) return;
+        foreach (var d in Devices.Where(x => x.Status != DeviceStatus.Waking))
+        {
+            if (string.IsNullOrEmpty(d.IpAddress)) continue;
+            bool isOnline = await ControlService.IsDeviceOnline(d.IpAddress);
+            d.Status = isOnline ? DeviceStatus.Online : DeviceStatus.Offline;
+        }
+        StateHasChanged();
+    }
+
+    private async Task IndividualWake(Device d)
+    {
+        if (d.Status == DeviceStatus.Waking) return;
+        d.Status = DeviceStatus.Waking; // Naranja
+        StateHasChanged();
+
+        await ControlService.SendMagicPacket(d.MacAddress);
+
+        // Esperar 15 seg para el primer ping tras encendido
+        _ = Task.Delay(15000).ContinueWith(async _ =>
+        {
+            bool online = await ControlService.IsDeviceOnline(d.IpAddress);
+            d.Status = online ? DeviceStatus.Online : DeviceStatus.Offline;
+            await InvokeAsync(StateHasChanged);
+        });
     }
 
     private void OpenModal(string mac = null)
@@ -202,15 +235,11 @@ else
             var d = Devices.FirstOrDefault(x => x.MacAddress == mac);
             if (d != null)
             {
-                tempDevice = new Device { Name = d.Name, MacAddress = d.MacAddress };
+                tempDevice = new Device { Name = d.Name, MacAddress = d.MacAddress, IpAddress = d.IpAddress };
                 isEditing = true;
             }
         }
-        else
-        {
-            tempDevice = new Device();
-            isEditing = false;
-        }
+        else { tempDevice = new Device(); isEditing = false; }
         showModal = true;
     }
 
@@ -220,26 +249,22 @@ else
         {
             if (isEditing) await ControlService.UpdateDevice(tempDevice);
             else await ControlService.AddDevice(tempDevice);
-
-            Devices = await ControlService.GetAllDevices();
+            await LoadDevices();
             showModal = false;
         }
     }
 
-    private async Task Remove(string mac)
+    private async Task Remove(string mac) { await ControlService.RemoveDevice(mac); await LoadDevices(); }
+    private void ToggleSelectAll() { allSelected = !allSelected; foreach (var d in Devices) d.IsSelected = allSelected; }
+    private async Task WakeAllDevices() { foreach (var d in Devices) await IndividualWake(d); }
+    private async Task WakeSelectedDevices() { foreach (var d in Devices.Where(x => x.IsSelected)) await IndividualWake(d); }
+    
+    private string GetStatusColor(DeviceStatus s) => s switch
     {
-        await ControlService.RemoveDevice(mac);
-        Devices = await ControlService.GetAllDevices();
-    }
+        DeviceStatus.Online => "#00ff88",
+        DeviceStatus.Waking => "#ffa500",
+        _ => "#444444"
+    };
 
-    private async Task WakeAllDevices()
-    {
-        foreach (var d in Devices) await ControlService.SendMagicPacket(d.MacAddress);
-    }
-
-    private async Task WakeSelectedDevices()
-    {
-        var selected = Devices.Where(d => d.IsSelected).ToList();
-        foreach (var d in selected) await ControlService.SendMagicPacket(d.MacAddress);
-    }
+    public void Dispose() => _refreshTimer?.Dispose();
 }
