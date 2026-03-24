@@ -66,7 +66,7 @@ else
                     <i class="bi bi-lightning-charge-fill"></i> ENCENDER TODOS
                 </button>
                 <button class="add-device-btn" @onclick="WakeSelectedDevices">
-                    <i class="bi bi-broadcast-pin"></i> SELECCIONADOS
+                    <i class="bi bi-broadcast-pin"></i> ENCENDER SELECCIONADOS
                 </button>
                 <button class="add-device-btn" @onclick="() => OpenModal()">
                     <i class="bi bi-plus-circle-fill"></i> REGISTRAR
@@ -213,26 +213,44 @@ else
 
     private async Task RefreshStatuses()
     {
+        // 1. Verificaciones de seguridad para no escanear si no es necesario
         if (!isAuthorized || showModal) return;
-        foreach (var d in Devices.Where(x => x.Status != DeviceStatus.Waking))
+
+        foreach (var d in Devices)
         {
+            // 2. Solo saltamos si acaba de darle al botón hace menos de unos segundos
+            // para dejar que la animación naranja respire, pero si no, comprobamos siempre.
+            if (d.Status == DeviceStatus.Waking) continue;
+        
             if (string.IsNullOrEmpty(d.IpAddress)) continue;
-            d.Status = await CheckRealStatus(d.IpAddress) ? DeviceStatus.Online : DeviceStatus.Offline;
+
+            // 3. Ejecutamos el Ping
+            bool isOnline = await CheckRealStatus(d.IpAddress);
+        
+            // 4. Actualizamos el estado real
+            d.Status = isOnline ? DeviceStatus.Online : DeviceStatus.Offline;
+            Console.WriteLine($"Refrescando {d.Name} ({d.IpAddress}): {(isOnline ? "ONLINE" : "OFFLINE")}");
         }
-        StateHasChanged();
+
+        // 5. ¡CLAVE! Forzamos a la interfaz de usuario a refrescarse desde el hilo del Timer
+        await InvokeAsync(StateHasChanged);
     }
 
-    // MÉTODO DEFINITIVO DE ESCANEO DE PUERTO (TCP 445 - SMB)
     private async Task<bool> CheckRealStatus(string ip)
     {
+        if (string.IsNullOrEmpty(ip)) return false;
         try
         {
-            using var tcpClient = new TcpClient();
-            var connectTask = tcpClient.ConnectAsync(ip, 445);
-            var completedTask = await Task.WhenAny(connectTask, Task.Delay(1000)); // Timeout de 1s
-            return connectTask.IsCompletedSuccessfully;
+            Console.WriteLine($"Pinging {ip}...");
+            using var ping = new System.Net.NetworkInformation.Ping();
+            // 1000ms es un tiempo estándar y seguro
+            var reply = await ping.SendPingAsync(ip, 1000);
+            return reply.Status == System.Net.NetworkInformation.IPStatus.Success;
         }
-        catch { return false; }
+        catch
+        {
+            return false;
+        }
     }
 
     private async Task IndividualWake(Device d)
@@ -242,21 +260,25 @@ else
         StateHasChanged();
 
         await ControlService.SendMagicPacket(d.MacAddress);
+        Console.WriteLine($"Enviando Magic Packet a {d.Name} ({d.MacAddress})...");
 
         // Reintento de verificación progresiva
         _ = Task.Run(async () =>
         {
             bool found = false;
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 3; i++)
             { // Intenta 5 veces cada 10 segundos
                 await Task.Delay(10000);
+                Console.WriteLine($"Reintentando ping a {d.Name} ({d.IpAddress}), intento {i + 1}/3...");
                 if (await CheckRealStatus(d.IpAddress))
                 {
                     found = true;
+                    Console.WriteLine($"¡{d.Name} ha respondido al ping! Marcando como ONLINE.");
                     break;
                 }
             }
             d.Status = found ? DeviceStatus.Online : DeviceStatus.Offline;
+            Console.WriteLine($"Estado final de {d.Name}: {(found ? "ONLINE" : "OFFLINE")}");
             await InvokeAsync(StateHasChanged);
         });
     }
@@ -299,5 +321,9 @@ else
         _ => isLightMode ? "#cbd5e1" : "#334155"
     };
 
-    public void Dispose() => _refreshTimer?.Dispose();
+    public void Dispose()
+    {
+        _refreshTimer?.Dispose();
+        Console.WriteLine("Home.razor: Timer disposed and component cleaned up.");
+    }
 }
