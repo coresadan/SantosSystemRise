@@ -67,6 +67,7 @@ public class RiseControlService
 
     public async Task SendMagicPacket(string mac)
     {
+        Console.WriteLine("Enviando Magic Packet a MAC: " + mac);
         if (string.IsNullOrWhiteSpace(mac)) return;
         try
         {
@@ -84,6 +85,6 @@ public class RiseControlService
             client.EnableBroadcast = true;
             await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Broadcast, 9));
         }
-        catch { /* Silencio */ }
+        catch {}
     }
 }
