@@ -21,10 +21,10 @@ body.light-mode {
     --card-bg: rgba(255, 255, 255, 0.65);
     --text-main: #020617;
     --text-muted: #475569;
-    --accent: #000000; /* ELIMINADO EL AZUL: Ahora el acento es Negro Puro */
-    --accent-glow: rgba(0, 0, 0, 0.15); /* Sombras oscuras elegantes, cero azul */
+    --accent: #000000;
+    --accent-glow: rgba(0, 0, 0, 0.15);
     --brand-glow-color: #000000;
-    --brand-sub-grad: linear-gradient(90deg, #475569, #000000, #475569); /* Degradado en grises/negro */
+    --brand-sub-grad: linear-gradient(90deg, #475569, #000000, #475569);
     --border-glass: rgba(255, 255, 255, 0.8);
 }
 
@@ -78,7 +78,7 @@ body.light-mode .login-screen {
 body.light-mode .login-container {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(16px);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05), 0 0 25px rgba(0, 0, 0, 0.1); /* Sombra gris/negra */
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05), 0 0 25px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--border-glass);
 }
 
@@ -130,7 +130,7 @@ body.light-mode .login-container {
 body.light-mode .device-row:hover {
     background: #ffffff;
     border-color: var(--accent);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1); /* Sombra gris/negra */
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
 }
 
 /* --- BOTONES ACCIÓN --- */
@@ -143,7 +143,7 @@ body.light-mode .device-row:hover {
 
 body.light-mode .action-btn {
     background: #ffffff;
-    border: 1px solid rgba(0, 0, 0, 0.15); /* Borde negro suave */
+    border: 1px solid rgba(0, 0, 0, 0.15);
     color: #475569;
 }
 
@@ -158,7 +158,7 @@ body.light-mode .action-btn {
 }
 
 body.light-mode .btn-power:hover {
-    background: #000000 !important; /* Adaptación del hover en modo claro */
+    background: #000000 !important;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
 }
 
@@ -186,7 +186,7 @@ body.light-mode .btn-power:hover {
     }
 }
 
-/* Header */
+/* Header Login */
 .login-header h1 {
     font-family: 'Syncopate', sans-serif;
     font-size: 1.7rem;
@@ -224,11 +224,12 @@ body.light-mode .btn-power:hover {
     font-family: 'JetBrains Mono', monospace;
     outline: none;
     transition: 0.25s;
+    box-sizing: border-box; /* Asegura que el padding no rompa el ancho */
 }
 
 body.light-mode .login-input {
     background: #ffffff;
-    border: 1px solid rgba(0, 0, 0, 0.15); /* Borde sin azul */
+    border: 1px solid rgba(0, 0, 0, 0.15);
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
@@ -249,7 +250,7 @@ body.light-mode .login-input {
     font-size: 1rem;
 }
 
-/* Botón */
+/* Botón Login */
 .login-btn {
     width: 100%;
     padding: 16px;
@@ -272,7 +273,7 @@ body.light-mode .login-btn {
 
     body.light-mode .login-btn:hover {
         background: #000000;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* Sombra sin azul */
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
     }
 
 .login-btn:hover {
@@ -280,7 +281,7 @@ body.light-mode .login-btn {
     transform: translateY(-2px);
 }
 
-/* Footer */
+/* Footer Login */
 .login-footer-text {
     margin-top: 28px;
     font-size: 0.7rem;
@@ -292,7 +293,7 @@ body.light-mode .login-btn {
 /* --- ESTRUCTURA DEL PANEL PRINCIPAL --- */
 .system-container {
     padding: 40px;
-    max-width: 1200px; /* Base estándar */
+    max-width: 1200px;
     margin: 0 auto;
     width: 100%;
     box-sizing: border-box;
@@ -305,12 +306,12 @@ body.light-mode .login-btn {
     margin-bottom: 50px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     padding-bottom: 20px;
-    flex-wrap: wrap; /* AÑADIDO: para que en móvil bajen los botones */
-    gap: 20px; /* AÑADIDO: espacio entre logo y botones */
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
 body.light-mode .main-header {
-    border-bottom-color: rgba(0, 0, 0, 0.1); /* Línea inferior gris/negra */
+    border-bottom-color: rgba(0, 0, 0, 0.1);
 }
 
 .brand-title {
@@ -363,14 +364,15 @@ body.light-mode .main-header {
     margin-top: 25px;
 }
 
-/* GRID CORRECTO */
+/* Estructura Grid PC */
 .list-labels,
 .device-row {
     display: grid !important;
-    grid-template-columns: 40px 2fr 1.2fr 1fr !important;
+    grid-template-columns: 50px 2fr 1.5fr 150px !important;
     align-items: center;
     gap: 20px;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .list-labels {
@@ -406,6 +408,7 @@ body.light-mode .main-header {
     border-radius: 16px;
     padding: 18px 30px;
     transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative; /* Importante para el responsive */
 }
 
 body.light-mode .device-row {
@@ -430,11 +433,12 @@ body.light-mode .device-row {
     color: var(--accent);
     font-size: 1.1rem;
     border: 1px solid rgba(255,255,255,0.05);
+    flex-shrink: 0;
 }
 
 body.light-mode .device-icon-box {
     background: #ffffff;
-    border: 1px solid rgba(0, 0, 0, 0.15); /* Borde gris/negro */
+    border: 1px solid rgba(0, 0, 0, 0.15);
     box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 
@@ -443,11 +447,11 @@ body.light-mode .device-icon-box {
     font-size: 0.95rem;
 }
 
-/* --- BADGE MAC EN MAGENTA --- */
+/* --- BADGE MAC --- */
 .mac-badge {
     font-family: 'JetBrains Mono', monospace;
     background: rgba(0,0,0,0.4);
-    color: #d946ef; /* Magenta brillante (Cyber) para oscuro */
+    color: #d946ef;
     padding: 6px 15px;
     border-radius: 8px;
     font-size: 0.85rem;
@@ -457,7 +461,7 @@ body.light-mode .device-icon-box {
 body.light-mode .mac-badge {
     background: #f1f5f9;
     border: 1px solid rgba(192, 38, 211, 0.2);
-    color: #c026d3; /* Magenta profundo (elegante) para contrastar bien en blanco */
+    color: #c026d3;
 }
 
 /* --- BOTONES Y ACCIONES --- */
@@ -511,7 +515,7 @@ body.light-mode .btn-save {
 }
 
 body.light-mode .btn-cancel {
-    border: 1px solid rgba(0, 0, 0, 0.2); /* Gris/Negro */
+    border: 1px solid rgba(0, 0, 0, 0.2);
     color: #475569;
     background: #ffffff;
 }
@@ -538,11 +542,10 @@ body.light-mode .btn-cancel {
 
 body.light-mode .action-btn {
     background: #ffffff;
-    border: 1px solid rgba(0, 0, 0, 0.15); /* Gris/Negro */
+    border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 /* --- MODAL REDISEÑADO PREMIUM --- */
-
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -576,10 +579,9 @@ body.light-mode .modal-content {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(16px);
     border: 1px solid var(--border-glass);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08), 0 0 30px rgba(0, 0, 0, 0.1); /* Sin azul */
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08), 0 0 30px rgba(0, 0, 0, 0.1);
 }
 
-/* Header */
 .modal-header-premium {
     text-align: center;
     margin-bottom: 35px;
@@ -601,7 +603,6 @@ body.light-mode .modal-content {
         opacity: 0.8;
     }
 
-/* Inputs */
 .input-group {
     margin-bottom: 22px;
     display: flex;
@@ -625,11 +626,12 @@ body.light-mode .modal-content {
     color: var(--text-main);
     font-family: 'JetBrains Mono', monospace;
     transition: 0.25s;
+    box-sizing: border-box;
 }
 
 body.light-mode .form-input {
     background: #ffffff;
-    border: 1px solid rgba(0, 0, 0, 0.15); /* Sin azul */
+    border: 1px solid rgba(0, 0, 0, 0.15);
     box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
 }
 
@@ -639,18 +641,13 @@ body.light-mode .form-input {
     background: rgba(15, 23, 42, 0.75);
 }
 
-body.light-mode .form-input:focus {
-    background: #ffffff;
-}
-
-/* Footer */
 .modal-footer-premium {
     margin-top: 35px;
     display: flex;
     gap: 15px;
 }
 
-/* Animaciones */
+/* Animaciones Modal */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -696,29 +693,25 @@ body.light-mode .form-input:focus {
     transition: 0.25s ease;
 }
 
-/* --- RESPONSIVIDAD --- */
+
+/* ==============================================================
+   --- RESPONSIVIDAD COMPLETAMENTE CORREGIDA ---
+============================================================== */
+
+/* Tablets / Laptops pequeñas */
 @media (max-width: 1100px) {
     .list-labels, .device-row {
-        grid-template-columns: 28px 1.8fr 1fr 0.8fr !important;
+        grid-template-columns: 40px 1.8fr 1fr 120px !important;
         gap: 12px;
-    }
-
-    .device-name {
-        font-size: 0.9rem;
-    }
-
-    .action-btn {
-        width: 36px;
-        height: 36px;
     }
 }
 
+/* Dispositivos Móviles y Pantallas Menores - SISTEMA DE TARJETAS COLAPSADAS */
 @media (max-width: 850px) {
-    /* AJUSTE CABECERA MÓVIL */
     .main-header {
         flex-direction: column;
         text-align: center;
-        gap: 25px;
+        gap: 20px;
     }
 
     .brand-title {
@@ -726,8 +719,6 @@ body.light-mode .form-input:focus {
         width: 100%;
     }
 
-    /* TRUCO PARA LOS BOTONES: 2 POR FILA */
-    /* Buscamos el contenedor de tus botones .add-device-btn */
     .main-header div:last-child {
         display: flex;
         flex-wrap: wrap;
@@ -737,54 +728,73 @@ body.light-mode .form-input:focus {
     }
 
     .add-device-btn {
-        flex: 1 1 calc(50% - 10px); /* 50% de ancho menos el gap */
+        flex: 1 1 calc(50% - 10px);
         min-width: 140px;
-        text-align: center;
-        padding: 12px 10px;
-        font-size: 0.65rem;
     }
 
+    /* Ocultamos las etiquetas en móvil porque pasamos a formato Tarjeta */
     .list-labels {
-        display: none;
+        display: none !important;
     }
 
+    /* Transformamos la fila en una Tarjeta Flex Contenida */
     .device-row {
-        grid-template-columns: 28px 1fr !important;
-        grid-template-rows: auto auto;
-        gap: 10px;
-        padding: 14px 16px;
+        display: flex !important;
+        flex-direction: column;
+        padding: 20px;
+        gap: 15px;
+        align-items: flex-start;
     }
 
-    .device-check {
-        grid-row: span 2;
-        align-self: center;
+        /* Aseguramos que los contenedores hijos respeten el ancho */
+        .device-row > * {
+            width: 100%;
+        }
+
+    /* Checkbox anclado arriba a la derecha */
+    .col-check {
+        position: absolute;
+        top: 22px;
+        right: 20px;
+        width: auto;
     }
 
+    /* Nombre e Icono */
     .col-main {
-        grid-column: 2 / 3;
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 15px;
+        max-width: calc(100% - 30px); /* Para no pisar el checkbox */
     }
 
+    /* Dirección MAC con margen para alinearse con el texto */
     .col-mac {
-        grid-column: 2 / 3;
-        opacity: 0.85;
-        font-size: 0.8rem;
+        margin-left: 53px; /* 38px del icono + 15px del gap */
+        opacity: 0.9;
+        display: inline-block;
     }
 
+    /* Barra de botones inferior */
     .col-actions {
-        grid-column: 2 / 3;
-        justify-content: flex-start;
+        display: flex;
+        justify-content: space-between;
         gap: 10px;
+        margin-top: 5px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
 
+    body.light-mode .col-actions {
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    /* Estirar botones para que ocupen todo el ancho equitativamente */
     .action-btn {
-        width: 32px;
-        height: 32px;
+        flex: 1;
     }
 }
 
+/* Teléfonos muy pequeños */
 @media (max-width: 550px) {
     .brand-santos-glow {
         font-size: 1.8rem;
@@ -795,55 +805,43 @@ body.light-mode .form-input:focus {
     }
 
     .device-row {
-        padding: 12px 12px;
-        gap: 8px;
+        padding: 15px;
     }
 
-    .device-icon-box {
-        width: 28px;
-        height: 28px;
-        font-size: 0.8rem;
+    .col-check {
+        top: 17px;
+        right: 15px;
     }
 
-    .device-name {
-        font-size: 0.75rem;
+    .col-mac {
+        margin-left: 0;
+        margin-top: 5px;
     }
-
-    .mac-badge {
-        font-size: 0.7rem;
-        padding: 4px 8px;
-    }
-
-    .action-btn {
-        width: 28px;
-        height: 28px;
-    }
-
-    .select-tools {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-        margin-top: 30px;
+    /* Se centra más en pantallas enanas */
+    .login-container {
+        width: 90%;
+        padding: 40px 25px;
     }
 }
 
-/* --- SOPORTE MEJORADO PARA PANTALLAS ULTRA-ANCHAS (4K+) --- */
+
+/* --- SOPORTE ULTRA-ANCHA (4K+) --- */
 @media (min-width: 1300px) {
     .system-container {
-        max-width: 1600px; /* Se estira más que el estándar de 1200px */
+        max-width: 1600px;
     }
 }
 
 @media (min-width: 2000px) {
     .system-container {
-        max-width: 2000px; /* Máximo estiramiento elegante para 4K */
+        max-width: 2000px;
     }
 
     :root {
-        font-size: 18px; /* Un ligero aumento para que no se vea minúsculo */
+        font-size: 18px;
     }
 
     .device-row {
-        padding: 25px 40px; /* Más aire en las filas para pantallas grandes */
+        padding: 25px 40px;
     }
 }
