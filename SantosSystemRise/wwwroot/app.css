@@ -1,5 +1,5 @@
 /* --- FUENTES Y VARIABLES --- */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;400;600;800&family=JetBrains+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@400;900&family=Inter:wght@300;400;600;800&family=JetBrains+Mono&display=swap');
 
 :root {
     --accent: #38bdf8;
@@ -82,15 +82,17 @@ body.light-mode .login-container {
     border: 1px solid var(--border-glass);
 }
 
-/* --- BRANDING: SYSTEMRISE --- */
+/* --- BRANDING: SYSTEMRISE (Panel Principal) --- */
 .brand-santos-glow {
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 900;
+    font-family: 'Inter', sans-serif; 
+    font-weight: 900; 
     font-size: 2.5rem;
-    letter-spacing: 4px;
+    letter-spacing: -1.5px;
+    text-transform: uppercase;
     color: var(--text-main);
-    text-shadow: 0 0 20px var(--accent-glow);
+    text-shadow: 0 0 15px var(--accent-glow);
     margin-bottom: 5px;
+    display: inline-block;
 }
 
 .brand-sub {
@@ -186,12 +188,14 @@ body.light-mode .btn-power:hover {
 
 /* Header */
 .login-header h1 {
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Syncopate', sans-serif;
     font-size: 1.7rem;
-    letter-spacing: 4px;
+    font-weight: 700; 
+    letter-spacing: -1px; 
     margin-bottom: 5px;
     color: var(--brand-glow-color);
     text-shadow: 0 0 8px var(--accent-glow);
+    text-transform: uppercase;
 }
 
 .login-header p {
@@ -314,11 +318,16 @@ body.light-mode .main-header {
 }
 
 .brand-santos-glow {
-    font-weight: 900;
-    color: var(--brand-glow-color);
+    font-family: 'Inter', sans-serif; 
+    font-weight: 900; 
+    font-size: 2.5rem;
+    letter-spacing: -1.5px; 
+    text-transform: uppercase;
+    color: var(--text-main);
     margin-right: 12px;
     text-shadow: 0 0 10px var(--accent-glow);
     animation: soft-pulse 4s ease-in-out infinite;
+    display: inline-block;
 }
 
 @keyframes soft-pulse {
