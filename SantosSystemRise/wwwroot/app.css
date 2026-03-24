@@ -844,4 +844,36 @@ body.light-mode .form-input {
     .device-row {
         padding: 25px 40px;
     }
-}
+
+    /* Ajuste para que los botones de la clase que solo tienen icono sean simétricos */
+    .add-device-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 45px; /* Evita que los de un solo icono se colapsen demasiado */
+        height: 42px;
+        padding: 10px 20px; /* Padding uniforme */
+    }
+
+    /* El toque especial para el botón de cerrar sesión */
+    .btn-logout-danger:hover {
+        background: #ef4444 !important;
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.6) !important;
+        color: white !important;
+    }
+
+    /* Animación de rotación para el refresh */
+    .spin {
+        animation: rotation 1s infinite linear;
+    }
+
+    @keyframes rotation {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }

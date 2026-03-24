@@ -1,6 +1,5 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,13 +15,15 @@
     
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet @rendermode="InteractiveServer" />
+    
+    @* La forma correcta de pasar el parámetro es a través del constructor *@
+    <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: false)" />
 </head>
-
 <body>
-    <Routes @rendermode="InteractiveServer" />
+    @* Se aplica lo mismo para las rutas *@
+    <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
+    
     <ReconnectModal />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
-
 </html>

@@ -1,11 +1,9 @@
 ﻿@page "/"
 @using SantosSystemRise.Services
 @using SantosSystemRise.Models
-@using System.Timers
 @using System.Net.Sockets
 @inject RiseControlService ControlService
 @inject IJSRuntime JS
-@implements IDisposable
 @rendermode InteractiveServer
 
 @if (!isAuthorized)
@@ -56,27 +54,39 @@ else
                 <span class="brand-santos-glow">SANTOS</span><span class="brand-sub">SystemRise</span>
             </div>
 
-            <div style="display:flex; gap:12px; align-items: center;">
-                @* BOTÓN MODO CLARO/OSCURO *@
-                <button class="action-btn" @onclick="ToggleTheme" title="Cambiar Tema" style="margin-right: 10px; background: var(--card-bg); border: 1px solid var(--accent);">
-                    <i class="bi @(isLightMode ? "bi-moon-stars-fill" : "bi-sun-fill")" style="color: var(--accent)"></i>
+            <div style="display:flex; gap:12px; align-items: center; flex-wrap: wrap;">
+    
+                @* BOTÓN IZQUIERDA: Actualizar (Ahora igual a los demás) *@
+                <button class="add-device-btn" @onclick="ManualRefresh" title="Refrescar">
+                    <i class="bi bi-arrow-clockwise @(isRefreshing ? "spin" : "")"></i>
                 </button>
 
+                @* BOTÓN TEMA *@
+                <button class="add-device-btn" @onclick="ToggleTheme" title="Cambiar Tema">
+                    <i class="bi @(isLightMode ? "bi-moon-stars-fill" : "bi-sun-fill")"></i>
+                </button>
+
+                @* BOTONES CENTRALES *@
                 <button class="add-device-btn" @onclick="WakeAllDevices">
                     <i class="bi bi-lightning-charge-fill"></i> ENCENDER TODOS
                 </button>
+    
                 <button class="add-device-btn" @onclick="WakeSelectedDevices">
                     <i class="bi bi-broadcast-pin"></i> ENCENDER SELECCIONADOS
                 </button>
+    
                 <button class="add-device-btn" @onclick="() => OpenModal()">
                     <i class="bi bi-plus-circle-fill"></i> REGISTRAR
                 </button>
-                <button class="action-btn btn-delete" @onclick="() => isAuthorized = false" title="Cerrar Sesión">
+
+                @* BOTÓN DERECHA: Cerrar Sesión (Igual forma, pero con hover rojo) *@
+                <button class="add-device-btn btn-logout-danger" @onclick="() => isAuthorized = false" title="Cerrar Sesión">
                     <i class="bi bi-box-arrow-right"></i>
                 </button>
             </div>
         </header>
 
+        @* ... resto de la tabla ... *@
         <div class="select-tools mt-4">
             <button class="add-device-btn" @onclick="ToggleSelectAll">
                 <i class="bi @(allSelected ? "bi-check-all" : "bi-square")"></i> @selectAllLabel
@@ -137,6 +147,7 @@ else
         </div>
     </div>
 
+    @* --- MODAL --- *@
     @if (showModal)
     {
         <div class="modal-overlay">
@@ -176,11 +187,11 @@ else
     private string errorMessage = "";
     private const string CORRECT_PASSWORD = "santos2026";
     private bool isLightMode = false;
+    private bool isRefreshing = false;
 
     private bool showModal = false, isEditing = false, allSelected = false;
     private Device tempDevice = new();
     private List<Device> Devices = new();
-    private System.Timers.Timer? _refreshTimer;
 
     private string selectAllLabel => allSelected ? "DESELECCIONAR" : "SELECCIONAR TODO";
     private int selectedCount => Devices.Count(d => d.IsSelected);
@@ -188,11 +199,29 @@ else
     protected override async Task OnInitializedAsync()
     {
         await LoadDevices();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CheckDevicesConnection();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task ManualRefresh()
+    {
+        if (isRefreshing) return;
         
-        _refreshTimer = new System.Timers.Timer(15000); // Refresco cada 15s para no saturar
-        _refreshTimer.Elapsed += async (s, e) => await InvokeAsync(RefreshStatuses);
-        _refreshTimer.AutoReset = true;
-        _refreshTimer.Enabled = true;
+        isRefreshing = true;
+        Console.WriteLine("\n[SANTOS-SYS] Solicitud de refresco manual iniciada...");
+        
+        await CheckDevicesConnection();
+        
+        isRefreshing = false;
+        await InvokeAsync(StateHasChanged);
+        Console.WriteLine("[SANTOS-SYS] Refresco manual completado.");
     }
 
     private async Task LoadDevices() => Devices = await ControlService.GetAllDevices();
@@ -211,74 +240,63 @@ else
 
     private void HandleKeyUp(KeyboardEventArgs e) { if (e.Key == "Enter") CheckPassword(); }
 
-    private async Task RefreshStatuses()
-    {
-        // 1. Verificaciones de seguridad para no escanear si no es necesario
-        if (!isAuthorized || showModal) return;
-
-        foreach (var d in Devices)
-        {
-            // 2. Solo saltamos si acaba de darle al botón hace menos de unos segundos
-            // para dejar que la animación naranja respire, pero si no, comprobamos siempre.
-            if (d.Status == DeviceStatus.Waking) continue;
-        
-            if (string.IsNullOrEmpty(d.IpAddress)) continue;
-
-            // 3. Ejecutamos el Ping
-            bool isOnline = await CheckRealStatus(d.IpAddress);
-        
-            // 4. Actualizamos el estado real
-            d.Status = isOnline ? DeviceStatus.Online : DeviceStatus.Offline;
-            Console.WriteLine($"Refrescando {d.Name} ({d.IpAddress}): {(isOnline ? "ONLINE" : "OFFLINE")}");
-        }
-
-        // 5. ¡CLAVE! Forzamos a la interfaz de usuario a refrescarse desde el hilo del Timer
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task<bool> CheckRealStatus(string ip)
+    private async Task<bool> CheckRealStatus(string ip, string name, int attempt = 0, int total = 0)
     {
         if (string.IsNullOrEmpty(ip)) return false;
         try
         {
-            Console.WriteLine($"Pinging {ip}...");
             using var ping = new System.Net.NetworkInformation.Ping();
-            // 1000ms es un tiempo estándar y seguro
-            var reply = await ping.SendPingAsync(ip, 1000);
-            return reply.Status == System.Net.NetworkInformation.IPStatus.Success;
+            var reply = await ping.SendPingAsync(ip, 800);
+            bool success = reply.Status == System.Net.NetworkInformation.IPStatus.Success;
+            
+            string progress = (attempt > 0 && total > 0) ? $"[{attempt}/{total}] " : "[INFO] ";
+            string status = success ? "ONLINE" : "OFFLINE";
+            
+            Console.WriteLine($"[SANTOS-SYS] {progress}Equipo: {name.PadRight(15)} IP: {ip.PadRight(15)} -> {status}");
+            
+            return success;
         }
         catch
         {
+            Console.WriteLine($"[SANTOS-SYS] [ERROR] Fallo crítico de red en {name}");
             return false;
         }
+    }
+
+    private async Task<bool> SmartPing(string ip, string name, int retries, int delayMs)
+    {
+        Console.WriteLine($"\n[SANTOS-SYS] >>> Seguimiento: {name.ToUpper()}");
+        for (int i = 1; i <= retries; i++)
+        {
+            if (await CheckRealStatus(ip, name, i, retries)) return true;
+            if (i < retries) await Task.Delay(delayMs);
+        }
+        return false;
+    }
+
+    private async Task CheckDevicesConnection()
+    {
+        Console.WriteLine("\n[SANTOS-SYS] --- ESCANEANDO RED ---");
+        var tasks = Devices.Select(async d =>
+        {
+            if (d.Status == DeviceStatus.Waking || string.IsNullOrEmpty(d.IpAddress)) return;
+            bool isAlive = await CheckRealStatus(d.IpAddress, d.Name);
+            d.Status = isAlive ? DeviceStatus.Online : DeviceStatus.Offline;
+        });
+        await Task.WhenAll(tasks);
+        Console.WriteLine("[SANTOS-SYS] --- ESCANEO FINALIZADO ---");
     }
 
     private async Task IndividualWake(Device d)
     {
         if (d.Status == DeviceStatus.Waking) return;
         d.Status = DeviceStatus.Waking;
-        StateHasChanged();
-
+        await InvokeAsync(StateHasChanged);
         await ControlService.SendMagicPacket(d.MacAddress);
-        Console.WriteLine($"Enviando Magic Packet a {d.Name} ({d.MacAddress})...");
-
-        // Reintento de verificación progresiva
         _ = Task.Run(async () =>
         {
-            bool found = false;
-            for (int i = 0; i < 5; i++)
-            { // Intenta 5 veces cada 10 segundos
-                await Task.Delay(10000);
-                Console.WriteLine($"Reintentando ping a {d.Name} ({d.IpAddress}), intento {i + 1}/3...");
-                if (await CheckRealStatus(d.IpAddress))
-                {
-                    found = true;
-                    Console.WriteLine($"¡{d.Name} ha respondido al ping! Marcando como ONLINE.");
-                    break;
-                }
-            }
+            bool found = await SmartPing(d.IpAddress, d.Name, 5, 10000);
             d.Status = found ? DeviceStatus.Online : DeviceStatus.Offline;
-            Console.WriteLine($"Estado final de {d.Name}: {(found ? "ONLINE" : "OFFLINE")}");
             await InvokeAsync(StateHasChanged);
         });
     }
@@ -305,6 +323,7 @@ else
             if (isEditing) await ControlService.UpdateDevice(tempDevice);
             else await ControlService.AddDevice(tempDevice);
             await LoadDevices();
+            await CheckDevicesConnection();
             showModal = false;
         }
     }
@@ -320,10 +339,4 @@ else
         DeviceStatus.Waking => "#ffa500",
         _ => isLightMode ? "#cbd5e1" : "#334155"
     };
-
-    public void Dispose()
-    {
-        _refreshTimer?.Dispose();
-        Console.WriteLine("Home.razor: Timer disposed and component cleaned up.");
-    }
 }
