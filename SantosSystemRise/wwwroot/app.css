@@ -15,18 +15,17 @@
     --border-glass: rgba(56, 189, 248, 0.25);
 }
 
-/* --- MODO CLARO: EVOLUCIÓN "CYBER-ICE" (MÁXIMO POTENCIAL) --- */
+/* --- MODO CLARO: EVOLUCIÓN "CYBER-ICE" (TODO AZUL PASA A NEGRO/GRIS) --- */
 body.light-mode {
-    --bg-dark: #f0f4f8;
-    --card-bg: rgba(255, 255, 255, 0.8); /* Glassmorphism claro */
-    --text-main: #0f172a; /* Contraste profundo para lectura fácil */
+    --bg-dark: #f1f5f9;
+    --card-bg: rgba(255, 255, 255, 0.65);
+    --text-main: #020617;
     --text-muted: #475569;
-    --accent: #0284c7;
-    --accent-glow: rgba(2, 132, 199, 0.25);
-    --brand-glow-color: #0c4a6e;
-    /* Degradado de SystemRise en claro: Azul Real a Abisal */
-    --brand-sub-grad: linear-gradient(90deg, #0284c7, #0c4a6e, #0284c7);
-    --border-glass: rgba(2, 132, 199, 0.15);
+    --accent: #000000; /* ELIMINADO EL AZUL: Ahora el acento es Negro Puro */
+    --accent-glow: rgba(0, 0, 0, 0.15); /* Sombras oscuras elegantes, cero azul */
+    --brand-glow-color: #000000;
+    --brand-sub-grad: linear-gradient(90deg, #475569, #000000, #475569); /* Degradado en grises/negro */
+    --border-glass: rgba(255, 255, 255, 0.8);
 }
 
 body {
@@ -42,7 +41,7 @@ body {
         background: radial-gradient(circle at top right, #e2e8f0, #f8fafc);
     }
 
-/* --- LOGIN: EL MURO DE SEGURIDAD (SIN LÍNEA) --- */
+/* --- LOGIN: EL MURO DE SEGURIDAD --- */
 .login-screen {
     height: 100vh;
     width: 100vw;
@@ -58,7 +57,7 @@ body {
 }
 
 body.light-mode .login-screen {
-    background: linear-gradient(135deg, #e2e8f0 0%, #f8fafc 100%);
+    background: linear-gradient(135deg, #e2e8f0 0%, #f1f5f9 100%);
 }
 
 .login-container {
@@ -77,9 +76,10 @@ body.light-mode .login-screen {
 }
 
 body.light-mode .login-container {
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08), 0 0 15px var(--accent-glow);
-    border: 1px solid rgba(2, 132, 199, 0.1);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05), 0 0 25px rgba(0, 0, 0, 0.1); /* Sombra gris/negra */
+    border: 1px solid var(--border-glass);
 }
 
 /* --- BRANDING: SYSTEMRISE --- */
@@ -95,7 +95,7 @@ body.light-mode .login-container {
 
 .brand-sub {
     font-family: 'Orbitron', sans-serif;
-    font-weight: 300; /* Un toque más de grosor para legibilidad */
+    font-weight: 300;
     font-size: 1.8rem;
     letter-spacing: 5px;
     background: var(--brand-sub-grad);
@@ -107,7 +107,7 @@ body.light-mode .login-container {
     filter: drop-shadow(0 0 2px var(--accent-glow));
 }
 
-/* --- TARJETAS Y FILAS (REACTIVIDAD PURA) --- */
+/* --- TARJETAS Y FILAS --- */
 .device-row {
     background: var(--card-bg);
     border: 1px solid var(--border-glass);
@@ -118,7 +118,6 @@ body.light-mode .login-container {
     backdrop-filter: blur(8px);
 }
 
-    /* Efecto de elevación y color al pasar el cursor (IDÉNTICO EN AMBOS MODOS) */
     .device-row:hover {
         transform: translateY(-3px) scale(1.01);
         background: var(--card-bg);
@@ -128,7 +127,8 @@ body.light-mode .login-container {
 
 body.light-mode .device-row:hover {
     background: #ffffff;
-    box-shadow: 0 12px 30px rgba(2, 132, 199, 0.15);
+    border-color: var(--accent);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1); /* Sombra gris/negra */
 }
 
 /* --- BOTONES ACCIÓN --- */
@@ -140,7 +140,9 @@ body.light-mode .device-row:hover {
 }
 
 body.light-mode .action-btn {
-    background: rgba(0, 0, 0, 0.03);
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.15); /* Borde negro suave */
+    color: #475569;
 }
 
 .action-btn:hover {
@@ -151,6 +153,11 @@ body.light-mode .action-btn {
 .btn-power:hover {
     background: #0ea5e9 !important;
     box-shadow: 0 0 15px rgba(14, 165, 233, 0.5);
+}
+
+body.light-mode .btn-power:hover {
+    background: #000000 !important; /* Adaptación del hover en modo claro */
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
 }
 
 .btn-edit:hover {
@@ -216,13 +223,14 @@ body.light-mode .action-btn {
 }
 
 body.light-mode .login-input {
-    background: #fff;
-    border-color: #e2e8f0;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.15); /* Borde sin azul */
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .login-input:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+    box-shadow: 0 0 10px var(--accent-glow);
     background: rgba(255,255,255,0.06);
 }
 
@@ -254,11 +262,17 @@ body.light-mode .login-input {
 }
 
 body.light-mode .login-btn {
+    background: #020617;
     color: #fff;
 }
 
+    body.light-mode .login-btn:hover {
+        background: #000000;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* Sombra sin azul */
+    }
+
 .login-btn:hover {
-    box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
+    box-shadow: 0 0 18px var(--accent-glow);
     transform: translateY(-2px);
 }
 
@@ -288,7 +302,7 @@ body.light-mode .login-btn {
 }
 
 body.light-mode .main-header {
-    border-bottom-color: #e2e8f0;
+    border-bottom-color: rgba(0, 0, 0, 0.1); /* Línea inferior gris/negra */
 }
 
 .brand-title {
@@ -326,12 +340,6 @@ body.light-mode .main-header {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: flow-shine 5s linear infinite;
-}
-
-@keyframes flow-shine {
-    to {
-        background-position: 200% center;
-    }
 }
 
 /* --- LISTA DE DISPOSITIVOS --- */
@@ -388,18 +396,8 @@ body.light-mode .main-header {
 }
 
 body.light-mode .device-row {
-    border-color: #e2e8f0;
-}
-
-.device-row:hover {
-    border-color: var(--accent);
-    transform: scale(1.005) translateX(5px);
-    background: rgba(30, 41, 59, 0.7);
-}
-
-body.light-mode .device-row:hover {
-    background: #fff;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border: 1px solid var(--border-glass);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
 }
 
 .col-main {
@@ -422,8 +420,9 @@ body.light-mode .device-row:hover {
 }
 
 body.light-mode .device-icon-box {
-    background: #f1f5f9;
-    border-color: #e2e8f0;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.15); /* Borde gris/negro */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 
 .device-name {
@@ -431,19 +430,21 @@ body.light-mode .device-icon-box {
     font-size: 0.95rem;
 }
 
+/* --- BADGE MAC EN MAGENTA --- */
 .mac-badge {
     font-family: 'JetBrains Mono', monospace;
     background: rgba(0,0,0,0.4);
-    color: var(--accent);
+    color: #d946ef; /* Magenta brillante (Cyber) para oscuro */
     padding: 6px 15px;
     border-radius: 8px;
     font-size: 0.85rem;
-    border: 1px solid rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(217, 70, 239, 0.25);
 }
 
 body.light-mode .mac-badge {
     background: #f1f5f9;
-    border-color: #e2e8f0;
+    border: 1px solid rgba(192, 38, 211, 0.2);
+    color: #c026d3; /* Magenta profundo (elegante) para contrastar bien en blanco */
 }
 
 /* --- BOTONES Y ACCIONES --- */
@@ -461,17 +462,28 @@ body.light-mode .mac-badge {
     text-transform: uppercase;
 }
 
-    .add-device-btn:hover, .btn-save:hover {
-        background: var(--accent);
-        color: #fff;
-        box-shadow: 0 0 20px var(--accent-glow);
-    }
+body.light-mode .add-device-btn {
+    border-color: #020617;
+    color: #020617;
+}
+
+.add-device-btn:hover, .btn-save:hover {
+    background: var(--accent);
+    color: #fff !important;
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--accent-glow);
+}
 
 .btn-save {
     background: var(--accent);
     color: #fff;
     border-radius: 10px;
     flex: 1;
+}
+
+body.light-mode .btn-save {
+    background: #020617;
+    border-color: #020617;
 }
 
 .btn-cancel {
@@ -486,7 +498,9 @@ body.light-mode .mac-badge {
 }
 
 body.light-mode .btn-cancel {
-    border-color: #e2e8f0;
+    border: 1px solid rgba(0, 0, 0, 0.2); /* Gris/Negro */
+    color: #475569;
+    background: #ffffff;
 }
 
 .col-actions {
@@ -510,22 +524,8 @@ body.light-mode .btn-cancel {
 }
 
 body.light-mode .action-btn {
-    background: #f1f5f9;
-}
-
-.btn-power:hover {
-    background: var(--success);
-    color: #020617;
-}
-
-.btn-edit:hover {
-    background: #eab308;
-    color: #020617;
-}
-
-.btn-delete:hover {
-    background: var(--danger);
-    color: #020617;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.15); /* Gris/Negro */
 }
 
 /* --- MODAL REDISEÑADO PREMIUM --- */
@@ -560,8 +560,10 @@ body.light-mode .action-btn {
 }
 
 body.light-mode .modal-content {
-    background: #fff;
-    border-color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border-glass);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08), 0 0 30px rgba(0, 0, 0, 0.1); /* Sin azul */
 }
 
 /* Header */
@@ -613,8 +615,9 @@ body.light-mode .modal-content {
 }
 
 body.light-mode .form-input {
-    background: #f1f5f9;
-    border-color: #e2e8f0;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.15); /* Sin azul */
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
 }
 
 .form-input:focus {
@@ -623,37 +626,15 @@ body.light-mode .form-input {
     background: rgba(15, 23, 42, 0.75);
 }
 
+body.light-mode .form-input:focus {
+    background: #ffffff;
+}
+
 /* Footer */
 .modal-footer-premium {
     margin-top: 35px;
     display: flex;
     gap: 15px;
-}
-
-.btn-save {
-    flex: 1;
-    padding: 14px;
-    border-radius: 12px;
-    background: var(--accent);
-    color: #fff;
-    font-weight: 900;
-    font-family: 'Orbitron', sans-serif;
-    letter-spacing: 2px;
-    border: none;
-    cursor: pointer;
-    transition: 0.25s;
-}
-
-.btn-cancel {
-    flex: 1;
-    padding: 14px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.05);
-    color: var(--text-muted);
-    border: 1px solid rgba(255,255,255,0.1);
-    font-weight: 700;
-    cursor: pointer;
-    transition: 0.25s;
 }
 
 /* Animaciones */
