@@ -12,19 +12,21 @@
     --text-muted: #94a3b8;
     --brand-glow-color: #fff;
     --brand-sub-grad: linear-gradient(90deg, #94a3b8, #fff, #94a3b8);
+    --border-glass: rgba(56, 189, 248, 0.25);
 }
 
-/* --- IMPLEMENTACIÓN MODO CLARO --- */
+/* --- MODO CLARO: EVOLUCIÓN "CYBER-ICE" (MÁXIMO POTENCIAL) --- */
 body.light-mode {
-    --bg-dark: #f8fafc;
-    --card-bg: rgba(255, 255, 255, 0.7);
-    --text-main: #0f172a;
-    --text-muted: #64748b;
+    --bg-dark: #f0f4f8;
+    --card-bg: rgba(255, 255, 255, 0.8); /* Glassmorphism claro */
+    --text-main: #0f172a; /* Contraste profundo para lectura fácil */
+    --text-muted: #475569;
     --accent: #0284c7;
-    --accent-glow: rgba(2, 132, 199, 0.2);
-    --brand-glow-color: #0f172a;
-    --brand-sub-grad: linear-gradient(90deg, #64748b, #0f172a, #64748b);
-    background: radial-gradient(circle at top right, #e2e8f0, #f8fafc);
+    --accent-glow: rgba(2, 132, 199, 0.25);
+    --brand-glow-color: #0c4a6e;
+    /* Degradado de SystemRise en claro: Azul Real a Abisal */
+    --brand-sub-grad: linear-gradient(90deg, #0284c7, #0c4a6e, #0284c7);
+    --border-glass: rgba(2, 132, 199, 0.15);
 }
 
 body {
@@ -33,11 +35,14 @@ body {
     font-family: 'Inter', sans-serif;
     margin: 0;
     min-height: 100vh;
-    transition: background 0.3s ease, color 0.3s ease;
+    transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s ease;
 }
 
-/* --- LOGIN CORPORATIVO SYSTEMRISE (SUTIL + ELEGANTE, SIN LÍNEA) --- */
+    body.light-mode {
+        background: radial-gradient(circle at top right, #e2e8f0, #f8fafc);
+    }
 
+/* --- LOGIN: EL MURO DE SEGURIDAD (SIN LÍNEA) --- */
 .login-screen {
     height: 100vh;
     width: 100vw;
@@ -49,44 +54,126 @@ body {
     top: 0;
     left: 0;
     z-index: 10000;
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(10px);
 }
 
 body.light-mode .login-screen {
-    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    background: linear-gradient(135deg, #e2e8f0 0%, #f8fafc 100%);
 }
 
-/* Contenedor corporativo */
 .login-container {
     background: rgba(15, 23, 42, 0.65);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    border-radius: 18px;
+    border: 1px solid var(--border-glass);
+    border-radius: 24px;
     width: 400px;
-    padding: 45px 40px;
+    padding: 50px 40px;
     text-align: center;
-    box-shadow: 0 0 25px rgba(56, 189, 248, 0.12);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3), 0 0 20px var(--accent-glow);
     position: relative;
     overflow: hidden;
     opacity: 0;
-    transform: translateY(15px);
-    animation: loginFadeUp 0.45s ease-out forwards;
+    transform: translateY(20px);
+    animation: loginFadeUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 body.light-mode .login-container {
     background: rgba(255, 255, 255, 0.9);
-    border-color: rgba(2, 132, 199, 0.2);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08), 0 0 15px var(--accent-glow);
+    border: 1px solid rgba(2, 132, 199, 0.1);
 }
 
-@keyframes loginFadeUp {
-    0% {
-        opacity: 0;
-        transform: translateY(20px);
+/* --- BRANDING: SYSTEMRISE --- */
+.brand-santos-glow {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 2.5rem;
+    letter-spacing: 4px;
+    color: var(--text-main);
+    text-shadow: 0 0 20px var(--accent-glow);
+    margin-bottom: 5px;
+}
+
+.brand-sub {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 300; /* Un toque más de grosor para legibilidad */
+    font-size: 1.8rem;
+    letter-spacing: 5px;
+    background: var(--brand-sub-grad);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: flow-shine 4s linear infinite;
+    display: block;
+    filter: drop-shadow(0 0 2px var(--accent-glow));
+}
+
+/* --- TARJETAS Y FILAS (REACTIVIDAD PURA) --- */
+.device-row {
+    background: var(--card-bg);
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
+    margin-bottom: 12px;
+    padding: 15px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(8px);
+}
+
+    /* Efecto de elevación y color al pasar el cursor (IDÉNTICO EN AMBOS MODOS) */
+    .device-row:hover {
+        transform: translateY(-3px) scale(1.01);
+        background: var(--card-bg);
+        border-color: var(--accent);
+        box-shadow: 0 10px 25px var(--accent-glow);
     }
 
-    100% {
+body.light-mode .device-row:hover {
+    background: #ffffff;
+    box-shadow: 0 12px 30px rgba(2, 132, 199, 0.15);
+}
+
+/* --- BOTONES ACCIÓN --- */
+.action-btn {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-glass);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.light-mode .action-btn {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    color: #fff !important;
+}
+
+.btn-power:hover {
+    background: #0ea5e9 !important;
+    box-shadow: 0 0 15px rgba(14, 165, 233, 0.5);
+}
+
+.btn-edit:hover {
+    background: #64748b !important;
+    box-shadow: 0 0 15px rgba(100, 116, 139, 0.4);
+}
+
+.btn-delete:hover {
+    background: #ef4444 !important;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+}
+
+/* --- ANIMACIONES --- */
+@keyframes loginFadeUp {
+    to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes flow-shine {
+    to {
+        background-position: 200% center;
     }
 }
 
