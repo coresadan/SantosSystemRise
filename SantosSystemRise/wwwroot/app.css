@@ -10,6 +10,21 @@
     --danger: #f87171;
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
+    --brand-glow-color: #fff;
+    --brand-sub-grad: linear-gradient(90deg, #94a3b8, #fff, #94a3b8);
+}
+
+/* --- IMPLEMENTACIÓN MODO CLARO --- */
+body.light-mode {
+    --bg-dark: #f8fafc;
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --accent: #0284c7;
+    --accent-glow: rgba(2, 132, 199, 0.2);
+    --brand-glow-color: #0f172a;
+    --brand-sub-grad: linear-gradient(90deg, #64748b, #0f172a, #64748b);
+    background: radial-gradient(circle at top right, #e2e8f0, #f8fafc);
 }
 
 body {
@@ -18,6 +33,7 @@ body {
     font-family: 'Inter', sans-serif;
     margin: 0;
     min-height: 100vh;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* --- LOGIN CORPORATIVO SYSTEMRISE (SUTIL + ELEGANTE, SIN LÍNEA) --- */
@@ -36,6 +52,10 @@ body {
     backdrop-filter: blur(6px);
 }
 
+body.light-mode .login-screen {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
 /* Contenedor corporativo */
 .login-container {
     background: rgba(15, 23, 42, 0.65);
@@ -50,6 +70,12 @@ body {
     opacity: 0;
     transform: translateY(15px);
     animation: loginFadeUp 0.45s ease-out forwards;
+}
+
+body.light-mode .login-container {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(2, 132, 199, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes loginFadeUp {
@@ -70,8 +96,8 @@ body {
     font-size: 1.7rem;
     letter-spacing: 4px;
     margin-bottom: 5px;
-    color: #fff;
-    text-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+    color: var(--brand-glow-color);
+    text-shadow: 0 0 8px var(--accent-glow);
 }
 
 .login-header p {
@@ -96,17 +122,22 @@ body {
     border: 1px solid rgba(255,255,255,0.08);
     padding: 14px 16px 14px 48px;
     border-radius: 10px;
-    color: #fff;
+    color: var(--text-main);
     font-family: 'JetBrains Mono', monospace;
     outline: none;
     transition: 0.25s;
 }
 
-    .login-input:focus {
-        border-color: var(--accent);
-        box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
-        background: rgba(255,255,255,0.06);
-    }
+body.light-mode .login-input {
+    background: #fff;
+    border-color: #e2e8f0;
+}
+
+.login-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+    background: rgba(255,255,255,0.06);
+}
 
 /* Icono */
 .login-icon {
@@ -126,7 +157,7 @@ body {
     background: var(--accent);
     border: none;
     border-radius: 10px;
-    color: #020617;
+    color: var(--bg-dark);
     font-weight: 800;
     font-family: 'Orbitron', sans-serif;
     letter-spacing: 2px;
@@ -135,10 +166,14 @@ body {
     text-transform: uppercase;
 }
 
-    .login-btn:hover {
-        box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
-        transform: translateY(-2px);
-    }
+body.light-mode .login-btn {
+    color: #fff;
+}
+
+.login-btn:hover {
+    box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
+    transform: translateY(-2px);
+}
 
 /* Footer */
 .login-footer-text {
@@ -165,6 +200,10 @@ body {
     padding-bottom: 20px;
 }
 
+body.light-mode .main-header {
+    border-bottom-color: #e2e8f0;
+}
+
 .brand-title {
     font-family: 'Orbitron', sans-serif;
     font-size: 1.8rem;
@@ -175,7 +214,7 @@ body {
 
 .brand-santos-glow {
     font-weight: 900;
-    color: #fff;
+    color: var(--brand-glow-color);
     margin-right: 12px;
     text-shadow: 0 0 10px var(--accent-glow);
     animation: soft-pulse 4s ease-in-out infinite;
@@ -195,7 +234,7 @@ body {
 
 .brand-sub {
     font-weight: 200;
-    background: linear-gradient(90deg, #94a3b8, #fff, #94a3b8);
+    background: var(--brand-sub-grad);
     background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -216,7 +255,7 @@ body {
     margin-top: 25px;
 }
 
-/* GRID CORRECTO: 4 columnas (checkbox + dispositivo + mac + acciones) */
+/* GRID CORRECTO */
 .list-labels,
 .device-row {
     display: grid !important;
@@ -226,7 +265,6 @@ body {
     width: 100%;
 }
 
-/* CABECERA PERFECTAMENTE ALINEADA */
 .list-labels {
     padding: 0 30px 8px 30px;
     font-size: 0.65rem;
@@ -236,19 +274,16 @@ body {
     opacity: 0.6;
 }
 
-    /* Alineación vertical y horizontal */
     .list-labels span,
     .device-row > * {
         display: flex;
         align-items: center;
     }
 
-/* Columna del checkbox */
 .col-check {
     justify-content: center;
 }
 
-/* Checkbox */
 .device-check {
     width: 18px;
     height: 18px;
@@ -256,7 +291,6 @@ body {
     cursor: pointer;
 }
 
-/* Fila */
 .device-row {
     background: var(--card-bg);
     backdrop-filter: blur(12px);
@@ -266,18 +300,19 @@ body {
     transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-    .device-row:hover {
-        border-color: var(--accent);
-        transform: scale(1.005) translateX(5px);
-        background: rgba(30, 41, 59, 0.7);
-    }
+body.light-mode .device-row {
+    border-color: #e2e8f0;
+}
 
+.device-row:hover {
+    border-color: var(--accent);
+    transform: scale(1.005) translateX(5px);
+    background: rgba(30, 41, 59, 0.7);
+}
 
-.device-check {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--accent);
-    cursor: pointer;
+body.light-mode .device-row:hover {
+    background: #fff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }
 
 .col-main {
@@ -299,6 +334,11 @@ body {
     border: 1px solid rgba(255,255,255,0.05);
 }
 
+body.light-mode .device-icon-box {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
 .device-name {
     font-weight: 700;
     font-size: 0.95rem;
@@ -312,6 +352,11 @@ body {
     border-radius: 8px;
     font-size: 0.85rem;
     border: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+body.light-mode .mac-badge {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
 }
 
 /* --- BOTONES Y ACCIONES --- */
@@ -331,13 +376,13 @@ body {
 
     .add-device-btn:hover, .btn-save:hover {
         background: var(--accent);
-        color: var(--bg-dark);
+        color: #fff;
         box-shadow: 0 0 20px var(--accent-glow);
     }
 
 .btn-save {
     background: var(--accent);
-    color: var(--bg-dark);
+    color: #fff;
     border-radius: 10px;
     flex: 1;
 }
@@ -351,6 +396,10 @@ body {
     font-weight: 700;
     cursor: pointer;
     flex: 1;
+}
+
+body.light-mode .btn-cancel {
+    border-color: #e2e8f0;
 }
 
 .col-actions {
@@ -371,6 +420,10 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+body.light-mode .action-btn {
+    background: #f1f5f9;
 }
 
 .btn-power:hover {
@@ -419,6 +472,11 @@ body {
     animation: modalPop 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+body.light-mode .modal-content {
+    background: #fff;
+    border-color: #e2e8f0;
+}
+
 /* Header */
 .modal-header-premium {
     text-align: center;
@@ -429,7 +487,7 @@ body {
         font-family: 'Orbitron', sans-serif;
         font-size: 1.4rem;
         letter-spacing: 3px;
-        color: #fff;
+        color: var(--brand-glow-color);
         margin-bottom: 8px;
         text-shadow: 0 0 12px var(--accent-glow);
     }
@@ -462,16 +520,21 @@ body {
     background: rgba(15, 23, 42, 0.55);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 12px;
-    color: #fff;
+    color: var(--text-main);
     font-family: 'JetBrains Mono', monospace;
     transition: 0.25s;
 }
 
-    .form-input:focus {
-        border-color: var(--accent);
-        box-shadow: 0 0 12px var(--accent-glow);
-        background: rgba(15, 23, 42, 0.75);
-    }
+body.light-mode .form-input {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+.form-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+    background: rgba(15, 23, 42, 0.75);
+}
 
 /* Footer */
 .modal-footer-premium {
@@ -485,7 +548,7 @@ body {
     padding: 14px;
     border-radius: 12px;
     background: var(--accent);
-    color: #020617;
+    color: #fff;
     font-weight: 900;
     font-family: 'Orbitron', sans-serif;
     letter-spacing: 2px;
@@ -493,11 +556,6 @@ body {
     cursor: pointer;
     transition: 0.25s;
 }
-
-    .btn-save:hover {
-        box-shadow: 0 0 20px var(--accent-glow);
-        transform: translateY(-2px);
-    }
 
 .btn-cancel {
     flex: 1;
@@ -510,11 +568,6 @@ body {
     cursor: pointer;
     transition: 0.25s;
 }
-
-    .btn-cancel:hover {
-        background: rgba(255,255,255,0.12);
-        color: #fff;
-    }
 
 /* Animaciones */
 @keyframes fadeIn {
@@ -537,130 +590,120 @@ body {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+}
 
-    /* --- Selección global --- */
-    .select-tools {
+/* Selección global */
+.select-tools {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding: 0 5px;
+}
+
+.selected-counter {
+    font-size: 0.8rem;
+    color: var(--accent);
+    opacity: 0.8;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.device-row.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+    transform: scale(1.01);
+    transition: 0.25s ease;
+}
+
+/* --- RESPONSIVIDAD --- */
+@media (max-width: 1100px) {
+    .list-labels, .device-row {
+        grid-template-columns: 28px 1.8fr 1fr 0.8fr !important;
+        gap: 12px;
+    }
+
+    .device-name {
+        font-size: 0.9rem;
+    }
+
+    .action-btn {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+@media (max-width: 850px) {
+    .list-labels {
+        display: none;
+    }
+
+    .device-row {
+        grid-template-columns: 28px 1fr !important;
+        grid-template-rows: auto auto;
+        gap: 10px;
+        padding: 14px 16px;
+    }
+
+    .device-check {
+        grid-row: span 2;
+        align-self: center;
+    }
+
+    .col-main {
+        grid-column: 2 / 3;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        margin-bottom: 15px;
-        padding: 0 5px;
+        gap: 12px;
     }
 
-    .selected-counter {
+    .col-mac {
+        grid-column: 2 / 3;
+        opacity: 0.85;
         font-size: 0.8rem;
-        color: var(--accent);
-        opacity: 0.8;
-        font-family: 'JetBrains Mono', monospace;
-    }
-    /* --- Animación al seleccionar --- */
-    .device-row.selected {
-        border-color: var(--accent);
-        box-shadow: 0 0 12px var(--accent-glow);
-        transform: scale(1.01);
-        transition: 0.25s ease;
     }
 
-    /* --- RESPONSIVIDAD SYSTEMRISE (VERSIÓN DEFINITIVA) --- */
-    /* 📌 Escritorio → sin cambios */
-    /* 📌 Tablets horizontales / portátiles pequeños */
-    @media (max-width: 1100px) {
-        .list-labels,
-        .device-row {
-            grid-template-columns: 28px 1.8fr 1fr 0.8fr !important;
-            gap: 12px;
-        }
-
-        .device-name {
-            font-size: 0.9rem;
-        }
-
-        .action-btn {
-            width: 36px;
-            height: 36px;
-        }
-    }
-    /* 📌 Tablets verticales / móviles grandes */
-    @media (max-width: 850px) {
-        /* Ocultamos cabecera */
-        .list-labels {
-            display: none;
-        }
-        /* Fila en dos líneas */
-        .device-row {
-            grid-template-columns: 28px 1fr !important;
-            grid-template-rows: auto auto;
-            gap: 10px;
-            padding: 14px 16px;
-        }
-        /* Checkbox centrado verticalmente */
-        .device-check {
-            grid-row: span 2;
-            align-self: center;
-        }
-        /* Icono + nombre arriba */
-        .col-main {
-            grid-column: 2 / 3;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        /* MAC debajo del nombre */
-        .col-mac {
-            grid-column: 2 / 3;
-            opacity: 0.85;
-            font-size: 0.8rem;
-        }
-        /* Acciones debajo */
-        .col-actions {
-            grid-column: 2 / 3;
-            justify-content: flex-start;
-            gap: 10px;
-        }
-
-        .action-btn {
-            width: 32px;
-            height: 32px;
-        }
-    }
-    /* 📌 Móviles pequeños */
-    @media (max-width: 550px) {
-
-        .device-row {
-            padding: 12px 12px;
-            gap: 8px;
-        }
-
-        .device-icon-box {
-            width: 28px;
-            height: 28px;
-            font-size: 0.8rem;
-        }
-
-        .device-name {
-            font-size: 0.75rem;
-        }
-
-        .mac-badge {
-            font-size: 0.7rem;
-            padding: 4px 8px;
-        }
-
-        .action-btn {
-            width: 28px;
-            height: 28px;
-        }
-        /* Herramientas de selección en columna */
-        .select-tools {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px; 
-            margin-top: 30px; 
-            margin-bottom: 20px; 
-            padding-left: 10px; 
-        }
+    .col-actions {
+        grid-column: 2 / 3;
+        justify-content: flex-start;
+        gap: 10px;
     }
 
+    .action-btn {
+        width: 32px;
+        height: 32px;
+    }
+}
 
+@media (max-width: 550px) {
+    .device-row {
+        padding: 12px 12px;
+        gap: 8px;
+    }
+
+    .device-icon-box {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+
+    .device-name {
+        font-size: 0.75rem;
+    }
+
+    .mac-badge {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+    }
+
+    .action-btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .select-tools {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-top: 30px;
+    }
 }
