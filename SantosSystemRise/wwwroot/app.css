@@ -84,8 +84,8 @@ body.light-mode .login-container {
 
 /* --- BRANDING: SYSTEMRISE (Panel Principal) --- */
 .brand-santos-glow {
-    font-family: 'Inter', sans-serif; 
-    font-weight: 900; 
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
     font-size: 2.5rem;
     letter-spacing: -1.5px;
     text-transform: uppercase;
@@ -190,8 +190,8 @@ body.light-mode .btn-power:hover {
 .login-header h1 {
     font-family: 'Syncopate', sans-serif;
     font-size: 1.7rem;
-    font-weight: 700; 
-    letter-spacing: -1px; 
+    font-weight: 700;
+    letter-spacing: -1px;
     margin-bottom: 5px;
     color: var(--brand-glow-color);
     text-shadow: 0 0 8px var(--accent-glow);
@@ -292,8 +292,10 @@ body.light-mode .login-btn {
 /* --- ESTRUCTURA DEL PANEL PRINCIPAL --- */
 .system-container {
     padding: 40px;
-    max-width: 1200px;
+    max-width: 1200px; /* Base estándar */
     margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .main-header {
@@ -303,6 +305,8 @@ body.light-mode .login-btn {
     margin-bottom: 50px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     padding-bottom: 20px;
+    flex-wrap: wrap; /* AÑADIDO: para que en móvil bajen los botones */
+    gap: 20px; /* AÑADIDO: espacio entre logo y botones */
 }
 
 body.light-mode .main-header {
@@ -318,10 +322,10 @@ body.light-mode .main-header {
 }
 
 .brand-santos-glow {
-    font-family: 'Inter', sans-serif; 
-    font-weight: 900; 
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
     font-size: 2.5rem;
-    letter-spacing: -1.5px; 
+    letter-spacing: -1.5px;
     text-transform: uppercase;
     color: var(--text-main);
     margin-right: 12px;
@@ -710,6 +714,36 @@ body.light-mode .form-input:focus {
 }
 
 @media (max-width: 850px) {
+    /* AJUSTE CABECERA MÓVIL */
+    .main-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 25px;
+    }
+
+    .brand-title {
+        justify-content: center;
+        width: 100%;
+    }
+
+    /* TRUCO PARA LOS BOTONES: 2 POR FILA */
+    /* Buscamos el contenedor de tus botones .add-device-btn */
+    .main-header div:last-child {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .add-device-btn {
+        flex: 1 1 calc(50% - 10px); /* 50% de ancho menos el gap */
+        min-width: 140px;
+        text-align: center;
+        padding: 12px 10px;
+        font-size: 0.65rem;
+    }
+
     .list-labels {
         display: none;
     }
@@ -752,6 +786,14 @@ body.light-mode .form-input:focus {
 }
 
 @media (max-width: 550px) {
+    .brand-santos-glow {
+        font-size: 1.8rem;
+    }
+
+    .brand-sub {
+        font-size: 1.2rem;
+    }
+
     .device-row {
         padding: 12px 12px;
         gap: 8px;
@@ -782,5 +824,26 @@ body.light-mode .form-input:focus {
         align-items: flex-start;
         gap: 8px;
         margin-top: 30px;
+    }
+}
+
+/* --- SOPORTE MEJORADO PARA PANTALLAS ULTRA-ANCHAS (4K+) --- */
+@media (min-width: 1300px) {
+    .system-container {
+        max-width: 1600px; /* Se estira más que el estándar de 1200px */
+    }
+}
+
+@media (min-width: 2000px) {
+    .system-container {
+        max-width: 2000px; /* Máximo estiramiento elegante para 4K */
+    }
+
+    :root {
+        font-size: 18px; /* Un ligero aumento para que no se vea minúsculo */
+    }
+
+    .device-row {
+        padding: 25px 40px; /* Más aire en las filas para pantallas grandes */
     }
 }

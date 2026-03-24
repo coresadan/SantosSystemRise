@@ -266,7 +266,7 @@ else
         _ = Task.Run(async () =>
         {
             bool found = false;
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 5; i++)
             { // Intenta 5 veces cada 10 segundos
                 await Task.Delay(10000);
                 Console.WriteLine($"Reintentando ping a {d.Name} ({d.IpAddress}), intento {i + 1}/3...");
