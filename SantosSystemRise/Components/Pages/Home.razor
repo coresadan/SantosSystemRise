@@ -2,7 +2,11 @@
 @using SantosSystemRise.Services
 @using SantosSystemRise.Models
 @using System.Net.Sockets
+@using Console = System.Console
+@using BootstrapBlazor.Components
+@using Microsoft.Extensions.Localization
 @inject RiseControlService ControlService
+@inject ToastService ToastService
 @inject IJSRuntime JS
 @rendermode InteractiveServer
 
@@ -54,39 +58,41 @@ else
                 <span class="brand-santos-glow">SANTOS</span><span class="brand-sub">SystemRise</span>
             </div>
 
+            @* BARRA DE BÚSQUEDA *@
+            <div class="search-box-premium" style="flex-grow: 1; max-width: 300px; margin: 0 20px; position: relative; background: rgba(255,255,255,0.05); border-radius: 8px; padding: 5px 15px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center;">
+                <i class="bi bi-search" style="color: var(--accent); margin-right: 10px;"></i>
+                <input type="text" @bind="searchTerm" @bind:event="oninput"
+                       placeholder="Filtrar por Nombre, IP o MAC..."
+                       style="background: transparent; border: none; color: white; outline: none; width: 100%; font-size: 0.85rem;" />
+            </div>
+
             <div style="display:flex; gap:12px; align-items: center; flex-wrap: wrap;">
-    
-                @* BOTÓN IZQUIERDA: Actualizar (Ahora igual a los demás) *@
                 <button class="add-device-btn" @onclick="ManualRefresh" title="Refrescar">
                     <i class="bi bi-arrow-clockwise @(isRefreshing ? "spin" : "")"></i>
                 </button>
 
-                @* BOTÓN TEMA *@
                 <button class="add-device-btn" @onclick="ToggleTheme" title="Cambiar Tema">
                     <i class="bi @(isLightMode ? "bi-moon-stars-fill" : "bi-sun-fill")"></i>
                 </button>
 
-                @* BOTONES CENTRALES *@
                 <button class="add-device-btn" @onclick="WakeAllDevices">
                     <i class="bi bi-lightning-charge-fill"></i> ENCENDER TODOS
                 </button>
     
                 <button class="add-device-btn" @onclick="WakeSelectedDevices">
-                    <i class="bi bi-broadcast-pin"></i> ENCENDER SELECCIONADOS
+                    <i class="bi bi-broadcast-pin"></i> SELECCIONADOS
                 </button>
     
                 <button class="add-device-btn" @onclick="() => OpenModal()">
                     <i class="bi bi-plus-circle-fill"></i> REGISTRAR
                 </button>
 
-                @* BOTÓN DERECHA: Cerrar Sesión (Igual forma, pero con hover rojo) *@
                 <button class="add-device-btn btn-logout-danger" @onclick="() => isAuthorized = false" title="Cerrar Sesión">
                     <i class="bi bi-box-arrow-right"></i>
                 </button>
             </div>
         </header>
 
-        @* ... resto de la tabla ... *@
         <div class="select-tools mt-4">
             <button class="add-device-btn" @onclick="ToggleSelectAll">
                 <i class="bi @(allSelected ? "bi-check-all" : "bi-square")"></i> @selectAllLabel
@@ -104,7 +110,7 @@ else
                 <span class="col-actions">ACCIONES</span>
             </div>
 
-            @foreach (var device in Devices)
+            @foreach (var device in FilteredDevices)
             {
                 <div class="device-row animate-pop @(device.IsSelected ? "selected" : "")"
                      style="border-left: 4px solid @GetStatusColor(device.Status)">
@@ -132,7 +138,7 @@ else
                     </div>
 
                     <div class="col-actions">
-                        <button class="action-btn btn-power" title="Sincronizar Estado" @onclick="() => IndividualWake(device)">
+                        <button class="action-btn btn-power" title="Encender / Ping" @onclick="() => IndividualWake(device)">
                             <i class="bi @(device.Status == DeviceStatus.Waking ? "bi-arrow-repeat spin" : "bi-lightning-charge-fill")"></i>
                         </button>
                         <button class="action-btn btn-edit" title="Editar" @onclick="() => OpenModal(device.MacAddress)">
@@ -182,6 +188,7 @@ else
 }
 
 @code {
+    private string searchTerm = "";
     private bool isAuthorized = false;
     private string passwordInput = "";
     private string errorMessage = "";
@@ -192,6 +199,14 @@ else
     private bool showModal = false, isEditing = false, allSelected = false;
     private Device tempDevice = new();
     private List<Device> Devices = new();
+
+    // Lógica de filtrado en tiempo real
+    private IEnumerable<Device> FilteredDevices => string.IsNullOrWhiteSpace(searchTerm)
+        ? Devices
+        : Devices.Where(d =>
+            (d.Name?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (d.IpAddress?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (d.MacAddress?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
 
     private string selectAllLabel => allSelected ? "DESELECCIONAR" : "SELECCIONAR TODO";
     private int selectedCount => Devices.Count(d => d.IsSelected);
@@ -213,14 +228,15 @@ else
     private async Task ManualRefresh()
     {
         if (isRefreshing) return;
-
         isRefreshing = true;
+    
         Console.WriteLine("\n[SANTOS-SYS] Solicitud de refresco manual iniciada...");
-
         await CheckDevicesConnection();
-
+    
         isRefreshing = false;
-        await InvokeAsync(StateHasChanged);
+
+        await Notificar("SISTEMA", "Refresco de red completado.", ToastCategory.Success);
+
         Console.WriteLine("[SANTOS-SYS] Refresco manual completado.");
     }
 
@@ -251,25 +267,84 @@ else
 
             string progress = (attempt > 0 && total > 0) ? $"[{attempt}/{total}] " : "[INFO] ";
             string status = success ? "ONLINE" : "OFFLINE";
-
             Console.WriteLine($"[SANTOS-SYS] {progress}Equipo: {name.PadRight(15)} IP: {ip.PadRight(15)} -> {status}");
 
             return success;
         }
-        catch
+        catch (Exception ex)
         {
-            Console.WriteLine($"[SANTOS-SYS] [ERROR] Fallo crítico de red en {name}");
+            Console.WriteLine($"[SANTOS-SYS] [ERROR] Fallo de red en {name}: {ex.Message}");
             return false;
         }
     }
 
+    // --- ACCIÓN PRINCIPAL REORGANIZADA ---
+    private async Task IndividualWake(Device d)
+    {
+        if (d.Status == DeviceStatus.Waking) return;
+        
+        d.Status = DeviceStatus.Waking;
+        await InvokeAsync(StateHasChanged);
+        
+        // 1. Encapsulamos el envío físico del paquete
+        await SendWakeUpProtocol(d);
+
+        // 2. Encapsulamos la verificación en segundo plano
+        _ = Task.Run(async () => await WaitAndVerifyStatus(d));
+    }
+
+    private async Task SendWakeUpProtocol(Device d)
+    {
+        Console.WriteLine($"\n[SANTOS-SYS] >>> Lanzando Protocolo WOL (Magic Packet) -> {d.Name}");
+        await ControlService.SendMagicPacket(d.MacAddress);
+    }
+
+    private async Task WaitAndVerifyStatus(Device d)
+    {
+        // El ping corre en segundo plano
+        bool found = await SmartPing(d.IpAddress, d.Name, 5, 20000);
+        d.Status = found ? DeviceStatus.Online : DeviceStatus.Offline;
+
+        // Forzamos que TODO lo que afecta a la UI ocurra en el hilo principal
+        await InvokeAsync(async () =>
+        {
+            if (found)
+            {
+                Console.WriteLine($"[SANTOS-SYS] [ÉXITO] {d.Name} ONLINE.");
+                await Notificar("SANTOS SYS: ÉXITO", $"[OK] {d.Name} respondió correctamente.", ToastCategory.Success);
+            }
+            else
+            {
+                Console.WriteLine($"[SANTOS-SYS] [FALLO] {d.Name} OFFLINE.");
+                await Notificar("SANTOS SYS: ERROR", $"[FALLO] {d.Name} no respondió tras los reintentos.", ToastCategory.Error);
+            }
+        
+            StateHasChanged();
+        });
+    }
+
+    // --- LÓGICA DE RED ---
     private async Task<bool> SmartPing(string ip, string name, int retries, int delayMs)
     {
         Console.WriteLine($"\n[SANTOS-SYS] >>> Seguimiento: {name.ToUpper()}");
+    
         for (int i = 1; i <= retries; i++)
         {
+            // Notificamos CADA intento antes de hacerlo
+            await Notificar("SANTOS-SYS: STATUS", $"[{i}/{retries}] Verificando conexión con {name}...", ToastCategory.Information);
+
             if (await CheckRealStatus(ip, name, i, retries)) return true;
-            if (i < retries) await Task.Delay(delayMs);
+
+            if (i < retries)
+            {
+                // Log en consola
+                Console.WriteLine($"[SANTOS-SYS] Intento {i} fallido. Reintentando en {delayMs / 1000}s...");
+            
+                // Notificamos el fallo del intento actual en la web
+                await Notificar("SANTOS-SYS: REINTENTO", $"[{i}/{retries}] Falló. Esperando {delayMs / 1000}s...", ToastCategory.Warning);
+            
+                await Task.Delay(delayMs);
+            }
             delayMs += 20000;
         }
         return false;
@@ -277,7 +352,7 @@ else
 
     private async Task CheckDevicesConnection()
     {
-        Console.WriteLine("\n[SANTOS-SYS] --- ESCANEANDO RED ---");
+        Console.WriteLine("\n[SANTOS-SYS] --- INICIANDO ESCANEO DE RED ---");
         var tasks = Devices.Select(async d =>
         {
             if (d.Status == DeviceStatus.Waking || string.IsNullOrEmpty(d.IpAddress)) return;
@@ -285,21 +360,33 @@ else
             d.Status = isAlive ? DeviceStatus.Online : DeviceStatus.Offline;
         });
         await Task.WhenAll(tasks);
-        Console.WriteLine("[SANTOS-SYS] --- ESCANEO FINALIZADO ---");
+        Console.WriteLine("[SANTOS-SYS] --- ESCANEO DE RED FINALIZADO ---");
     }
 
-    private async Task IndividualWake(Device d)
+    // --- GESTIÓN DE DATOS ---
+    private async Task Save()
     {
-        if (d.Status == DeviceStatus.Waking) return;
-        d.Status = DeviceStatus.Waking;
-        await InvokeAsync(StateHasChanged);
-        await ControlService.SendMagicPacket(d.MacAddress);
-        _ = Task.Run(async () =>
+        if (!string.IsNullOrWhiteSpace(tempDevice.Name) && !string.IsNullOrWhiteSpace(tempDevice.MacAddress))
         {
-            bool found = await SmartPing(d.IpAddress, d.Name, 5, 20000);
-            d.Status = found ? DeviceStatus.Online : DeviceStatus.Offline;
-            await InvokeAsync(StateHasChanged);
-        });
+            if (isEditing) await ControlService.UpdateDevice(tempDevice);
+            else await ControlService.AddDevice(tempDevice);
+            
+            await LoadDevices();
+            await CheckDevicesConnection();
+            showModal = false;
+            
+            await Notificar("BASE DE DATOS", "Cambios guardados con éxito.", ToastCategory.Success);
+        }
+    }
+
+    private async Task Remove(string mac)
+    {
+        var device = Devices.FirstOrDefault(x => x.MacAddress == mac);
+        Console.WriteLine($"[SANTOS-SYS] Eliminando equipo: {device?.Name ?? mac}");
+        await ControlService.RemoveDevice(mac);
+        await LoadDevices();
+        
+        await Notificar("SISTEMA", "Equipo eliminado del registro.", ToastCategory.Warning);
     }
 
     private void OpenModal(string mac = null)
@@ -317,22 +404,19 @@ else
         showModal = true;
     }
 
-    private async Task Save()
-    {
-        if (!string.IsNullOrWhiteSpace(tempDevice.Name) && !string.IsNullOrWhiteSpace(tempDevice.MacAddress))
-        {
-            if (isEditing) await ControlService.UpdateDevice(tempDevice);
-            else await ControlService.AddDevice(tempDevice);
-            await LoadDevices();
-            await CheckDevicesConnection();
-            showModal = false;
-        }
-    }
-
-    private async Task Remove(string mac) { await ControlService.RemoveDevice(mac); await LoadDevices(); }
     private void ToggleSelectAll() { allSelected = !allSelected; foreach (var d in Devices) d.IsSelected = allSelected; }
-    private async Task WakeAllDevices() { foreach (var d in Devices) await IndividualWake(d); }
-    private async Task WakeSelectedDevices() { foreach (var d in Devices.Where(x => x.IsSelected)) await IndividualWake(d); }
+    
+    private async Task WakeAllDevices()
+    {
+        Console.WriteLine("[SANTOS-SYS] Ejecutando encendido masivo...");
+        foreach (var d in Devices) await IndividualWake(d);
+    }
+    
+    private async Task WakeSelectedDevices()
+    {
+        Console.WriteLine($"[SANTOS-SYS] Encendiendo {selectedCount} equipos seleccionados...");
+        foreach (var d in Devices.Where(x => x.IsSelected)) await IndividualWake(d);
+    }
     
     private string GetStatusColor(DeviceStatus s) => s switch
     {
@@ -340,4 +424,19 @@ else
         DeviceStatus.Waking => "#ffa500",
         _ => isLightMode ? "#cbd5e1" : "#334155"
     };
+
+    private async Task Notificar(string titulo, string msg, ToastCategory cat)
+    {
+        await InvokeAsync(async () =>
+        {
+            await ToastService.Show(new ToastOption()
+            {
+                Category = cat,
+                Title = titulo,
+                Content = msg,
+                Delay = 6000,
+            });
+            StateHasChanged();
+        });
+    }
 }

@@ -5,7 +5,7 @@ using SantosSystemRise.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// --- SERVICIOS BASE ---
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -13,8 +13,11 @@ builder.Services.AddRazorComponents()
 builder.Services.AddDbContext<SystemRiseContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("SystemRiseDb")));
 
-// 2. Registrar tu servicio como Scoped (correcto para EF Core)
+// 2. Registrar servicios de la aplicación
 builder.Services.AddScoped<RiseControlService>();
+
+// 3. REGISTRAR BOOTSTRAP BLAZOR (Añadido para los Toasts)
+builder.Services.AddBootstrapBlazor();
 
 var app = builder.Build();
 
@@ -27,6 +30,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseAntiforgery();
+
 app.MapStaticAssets();
 
 app.MapRazorComponents<App>()

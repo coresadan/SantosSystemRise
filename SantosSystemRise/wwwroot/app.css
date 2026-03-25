@@ -693,6 +693,66 @@ body.light-mode .form-input {
     transition: 0.25s ease;
 }
 
+/* ==============================================================
+   --- SISTEMA DE NOTIFICACIONES SANTOS (MODO DUAL) ---
+   ============================================================== */
+
+/* 1. ESTILO BASE (OSCURO) */
+body .toast-container .toast {
+    background-color: #020617 !important;
+    border: 1px solid #38bdf8 !important;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.4) !important;
+    opacity: 1 !important;
+    color: #f8fafc !important;
+}
+
+body .toast-container .toast-header {
+    background-color: #0f172a !important;
+    color: #38bdf8 !important;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
+    font-family: 'Syncopate', sans-serif !important;
+}
+
+body .toast-container .toast-body {
+    color: #f8fafc !important;
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* 2. ADAPTACIÓN A MODO CLARO (CYBER-ICE) */
+body.light-mode .toast-container .toast {
+    background-color: #ffffff !important;
+    border: 1px solid #000000 !important; /* Siguiendo tu estética de acento negro */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    color: #020617 !important;
+}
+
+body.light-mode .toast-container .toast-header {
+    background-color: #f1f5f9 !important;
+    color: #000000 !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+body.light-mode .toast-container .toast-body {
+    color: #020617 !important;
+}
+
+/* 3. VARIANTES DE ESTADO (Se mantienen funcionales en ambos modos) */
+body .toast-container .toast.border-danger {
+    border-color: #ef4444 !important;
+}
+
+    body .toast-container .toast.border-danger .toast-header {
+        color: #ef4444 !important;
+    }
+
+/* Botón de cerrar adaptable */
+body .toast-container .btn-close {
+    filter: invert(1) brightness(2) !important;
+}
+
+body.light-mode .toast-container .btn-close {
+    filter: none !important; /* X negra en modo claro */
+}
 
 /* ==============================================================
    --- RESPONSIVIDAD COMPLETAMENTE CORREGIDA ---
@@ -862,18 +922,4 @@ body.light-mode .form-input {
         box-shadow: 0 0 20px rgba(239, 68, 68, 0.6) !important;
         color: white !important;
     }
-
-    /* Animación de rotación para el refresh */
-    .spin {
-        animation: rotation 1s infinite linear;
-    }
-
-    @keyframes rotation {
-        from {
-            transform: rotate(0deg);
-        }
-
-        to {
-            transform: rotate(360deg);
-        }
-    }
+}
