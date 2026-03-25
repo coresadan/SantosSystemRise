@@ -213,12 +213,12 @@ else
     private async Task ManualRefresh()
     {
         if (isRefreshing) return;
-        
+
         isRefreshing = true;
         Console.WriteLine("\n[SANTOS-SYS] Solicitud de refresco manual iniciada...");
-        
+
         await CheckDevicesConnection();
-        
+
         isRefreshing = false;
         await InvokeAsync(StateHasChanged);
         Console.WriteLine("[SANTOS-SYS] Refresco manual completado.");
@@ -248,12 +248,12 @@ else
             using var ping = new System.Net.NetworkInformation.Ping();
             var reply = await ping.SendPingAsync(ip, 800);
             bool success = reply.Status == System.Net.NetworkInformation.IPStatus.Success;
-            
+
             string progress = (attempt > 0 && total > 0) ? $"[{attempt}/{total}] " : "[INFO] ";
             string status = success ? "ONLINE" : "OFFLINE";
-            
+
             Console.WriteLine($"[SANTOS-SYS] {progress}Equipo: {name.PadRight(15)} IP: {ip.PadRight(15)} -> {status}");
-            
+
             return success;
         }
         catch
@@ -270,6 +270,7 @@ else
         {
             if (await CheckRealStatus(ip, name, i, retries)) return true;
             if (i < retries) await Task.Delay(delayMs);
+            delayMs += 20000;
         }
         return false;
     }
@@ -295,7 +296,7 @@ else
         await ControlService.SendMagicPacket(d.MacAddress);
         _ = Task.Run(async () =>
         {
-            bool found = await SmartPing(d.IpAddress, d.Name, 5, 10000);
+            bool found = await SmartPing(d.IpAddress, d.Name, 5, 20000);
             d.Status = found ? DeviceStatus.Online : DeviceStatus.Offline;
             await InvokeAsync(StateHasChanged);
         });
